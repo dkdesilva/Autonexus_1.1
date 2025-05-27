@@ -26,6 +26,24 @@ const animationProps = {
   transition: { duration: 0.3 },
 };
 
+const FormGroup: React.FC<{ label: string; children: React.ReactNode }> = ({
+  label,
+  children,
+}) => (
+  <div className="flex flex-col">
+    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+    <div className="mt-1">{children}</div>
+  </div>
+);
+
+const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
+  <div className="relative border-t mt-8 mb-4">
+    <span className="absolute -top-3 left-3 bg-white dark:bg-gray-800 px-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+      {title}
+    </span>
+  </div>
+);
+
 const CustomerProfileFormSection: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -33,7 +51,6 @@ const CustomerProfileFormSection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Set or remove axios Authorization header globally
   const setAuthToken = (token: string | null) => {
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -44,15 +61,12 @@ const CustomerProfileFormSection: React.FC = () => {
 
   useEffect(() => {
     document.title = "AutoNexus - Your Profile";
-
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
     if (!token) {
       setError("No token found. Please login.");
       setAuthToken(null);
       setLoading(false);
-      // Optionally redirect to login page
       navigate("/signin");
       return;
     }
@@ -62,17 +76,14 @@ const CustomerProfileFormSection: React.FC = () => {
     const fetchUserProfile = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/customer/get/fullprofile");
-
         setProfile(res.data);
         setLoading(false);
       } catch (err: any) {
         if (err.response?.status === 401 || err.response?.status === 403) {
           setError("Unauthorized. Please login again.");
-          // Clear token on unauthorized
           localStorage.removeItem("token");
           sessionStorage.removeItem("token");
           setAuthToken(null);
-          // Redirect to login
           navigate("/signin");
         } else {
           setError("Failed to fetch profile data.");
@@ -126,112 +137,117 @@ const CustomerProfileFormSection: React.FC = () => {
     <motion.div key="settings" {...animationProps}>
       <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Information */}
-        <div>
-          <h3 className="text-lg font-medium mb-3">Personal Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SectionHeader title="Personal Information" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormGroup label="Username">
             <input
               type="text"
               name="username"
-              placeholder="Username"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.username}
               disabled
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Email">
             <input
               type="email"
               name="email"
-              placeholder="Email"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.email}
               disabled
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
-          </div>
+          </FormGroup>
         </div>
 
-        {/* Additional Details */}
-        <div>
-          <h3 className="text-lg font-medium mb-3">Additional Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SectionHeader title="Additional Details" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormGroup label="First Name">
             <input
               type="text"
               name="first_name"
-              placeholder="First Name"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.first_name}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Middle Name">
             <input
               type="text"
               name="middle_name"
-              placeholder="Middle Name"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.middle_name}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Last Name">
             <input
               type="text"
               name="last_name"
-              placeholder="Last Name"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.last_name}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Date of Birth">
             <input
               type="date"
               name="date_of_birth"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.date_of_birth?.split("T")[0]}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Phone Number">
             <input
               type="text"
               name="phone_number"
-              placeholder="Phone Number"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.phone_number}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Gender">
             <select
               name="gender"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.gender || ""}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              <option value="" disabled>
-                Gender
-              </option>
+              <option value="" disabled>Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
+          </FormGroup>
+          <FormGroup label="Address">
             <input
               type="text"
               name="address"
-              placeholder="Address"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.address}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Province">
             <input
               type="text"
               name="province"
-              placeholder="Province"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.province}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="District">
             <input
               type="text"
               name="district"
-              placeholder="District"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.district}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </FormGroup>
+          <FormGroup label="Postal Code">
             <input
               type="text"
               name="postal_code"
-              placeholder="Postal Code"
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               defaultValue={profile?.postal_code}
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
-          </div>
+          </FormGroup>
         </div>
 
-        {/* Save Changes */}
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-4">
           <button
             type="submit"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"

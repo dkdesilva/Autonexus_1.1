@@ -58,7 +58,9 @@ const upload = multer({
   },
 });
 
-// User Registration
+//Customer
+
+// Customer Registration
 app.post('/api/cusregister', async (req, res) => {
   const { username, email, password } = req.body;
   try {
@@ -78,7 +80,7 @@ app.post('/api/cusregister', async (req, res) => {
   }
 });
 
-// User Login
+// Customer Login
 app.post('/api/cuslogin', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: 'Email and Password are required' });
@@ -113,9 +115,92 @@ app.post('/api/cuslogin', (req, res) => {
 });
 
 
-// Logout
+// Customer Logout
 app.post('/api/cuslogout', (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
+});
+
+
+// Insert or Update Customer Profile Details
+app.put('/api/customer/update/details', authenticateJWT, (req, res) => {
+  const {
+    first_name, middle_name, last_name, date_of_birth,
+    phone_number, gender, address, province, district, postal_code
+  } = req.body;
+
+  db.query('SELECT * FROM customer_details WHERE customer_id = ?', [req.userId], (err, result) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+
+    const values = [
+      first_name, middle_name, last_name, date_of_birth,
+      phone_number, gender, address, province, district, postal_code, req.userId
+    ];
+
+    if (result.length > 0) {
+      // Update
+      const sql = `
+        UPDATE customer_details SET
+          first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?,
+          phone_number = ?, gender = ?, address = ?, province = ?, district = ?,
+          postal_code = ?
+        WHERE customer_id = ?
+      `;
+      db.query(sql, values, (err) => {
+        if (err) return res.status(500).json({ message: 'Update failed' });
+        res.status(200).json({ message: 'Customer details updated successfully' });
+      });
+    } else {
+      // Insert
+      const insertSql = `
+        INSERT INTO customer_details (
+          customer_id, first_name, middle_name, last_name, date_of_birth,
+          phone_number, gender, address, province, district, postal_code
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      db.query(insertSql, [req.userId, ...values.slice(0, -1)], (err) => {
+        if (err) return res.status(500).json({ message: 'Insert failed' });
+        res.status(201).json({ message: 'Customer details added successfully' });
+      });
+    }
+  });
+});
+
+// Get Full Customer Profile (excluding image)
+app.get('/api/customer/get/fullprofile', authenticateJWT, (req, res) => {
+  const sql = `
+    SELECT 
+      c.id AS customer_id,
+      c.username,
+      c.email,
+      cd.first_name,
+      cd.middle_name,
+      cd.last_name,
+      cd.date_of_birth,
+      cd.phone_number,
+      cd.gender,
+      cd.address,
+      cd.province,
+      cd.district,
+      cd.postal_code,
+      cd.created_at AS created_at
+    FROM customers c
+    LEFT JOIN customer_details cd ON c.id = cd.customer_id
+    WHERE c.id = ?
+  `;
+  db.query(sql, [req.userId], (err, result) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (result.length === 0) return res.status(404).json({ message: 'Customer not found' });
+    res.status(200).json(result[0]);
+  });
+});
+
+
+// Total Customer Count
+app.get('/api/customers/count', (req, res) => {
+  db.query('SELECT COUNT(*) AS count FROM customers', (err, result) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    res.status(200).json({ count: result[0].count });
+  });
 });
 
 // Basic User Info
@@ -129,13 +214,6 @@ app.get('/api/user', authenticateJWT, (req, res) => {
   });
 });
 
-// Total Customer Count
-app.get('/api/customers/count', (req, res) => {
-  db.query('SELECT COUNT(*) AS count FROM customers', (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    res.status(200).json({ count: result[0].count });
-  });
-});
 
 //Image Part
 // Upload profile image
@@ -195,78 +273,6 @@ app.get('/api/customer/details', authenticateJWT, (req, res) => {
   });
 });
 
-// Insert or Update Profile Details
-app.put('/api/customer/update/details', authenticateJWT, (req, res) => {
-  const {
-    first_name, middle_name, last_name, date_of_birth,
-    phone_number, gender, address, province, district, postal_code
-  } = req.body;
-
-  db.query('SELECT * FROM customer_details WHERE customer_id = ?', [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-
-    const values = [
-      first_name, middle_name, last_name, date_of_birth,
-      phone_number, gender, address, province, district, postal_code, req.userId
-    ];
-
-    if (result.length > 0) {
-      // Update
-      const sql = `
-        UPDATE customer_details SET
-          first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?,
-          phone_number = ?, gender = ?, address = ?, province = ?, district = ?,
-          postal_code = ?
-        WHERE customer_id = ?
-      `;
-      db.query(sql, values, (err) => {
-        if (err) return res.status(500).json({ message: 'Update failed' });
-        res.status(200).json({ message: 'Customer details updated successfully' });
-      });
-    } else {
-      // Insert
-      const insertSql = `
-        INSERT INTO customer_details (
-          customer_id, first_name, middle_name, last_name, date_of_birth,
-          phone_number, gender, address, province, district, postal_code
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      db.query(insertSql, [req.userId, ...values.slice(0, -1)], (err) => {
-        if (err) return res.status(500).json({ message: 'Insert failed' });
-        res.status(201).json({ message: 'Customer details added successfully' });
-      });
-    }
-  });
-});
-
-// Get Full Profile (excluding image)
-app.get('/api/customer/get/fullprofile', authenticateJWT, (req, res) => {
-  const sql = `
-    SELECT 
-      c.id AS customer_id,
-      c.username,
-      c.email,
-      cd.first_name,
-      cd.middle_name,
-      cd.last_name,
-      cd.date_of_birth,
-      cd.phone_number,
-      cd.gender,
-      cd.address,
-      cd.province,
-      cd.district,
-      cd.postal_code,
-      cd.created_at AS created_at
-    FROM customers c
-    LEFT JOIN customer_details cd ON c.id = cd.customer_id
-    WHERE c.id = ?
-  `;
-  db.query(sql, [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    if (result.length === 0) return res.status(404).json({ message: 'Customer not found' });
-    res.status(200).json(result[0]);
-  });
-});
 
 // Start Server
 app.listen(5000, () => {
