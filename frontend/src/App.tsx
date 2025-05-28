@@ -11,7 +11,6 @@ import SpareParts from './pages/main/SpareParts';
 import Garages from './pages/main/Garages';
 import Dealerships from './pages/main/Dealerships';
 import CommernLandingPage from './pages/landing/CommonLandingPage';
-import ProfileSection from './components/landing/sections/ProfileSection';
 import CustomerSignIn from './pages/main/customer/CustomerSignIn';
 import CustomerSignUp from './pages/main/customer/CustomerSignUp';
 import SparePartShopSignIn from './pages/main/spare_part_shop/SparePartShopSignIn';
@@ -20,6 +19,7 @@ import VehicleDealershipSignIn from './pages/main/vehicle_dealership/VehicleDeal
 import VehicleDealershipSignUp from './pages/main/vehicle_dealership/VehicleDealershipSignUp';
 import VehicleShopSignIn from './pages/main/vehicle_shop/VehicleShopSignIn';
 import VehicleShopSignUp from './pages/main/vehicle_shop/VehicleShopSignUp';
+import CustomerProfile from './pages/main/customer/CustomerProfile';
 
 function App() {
   return (
@@ -37,7 +37,7 @@ function App() {
           <Route path="/spare-parts" element={<SpareParts />} />
           <Route path="/garages" element={<Garages />} />
           <Route path="/dealerships" element={<Dealerships />} />
-          <Route path="/profile" element={<ProfileSection />} />
+          <Route path="/profile" element={<CustomerProfile />} />
 
           <Route path="/customer-signin" element={<CustomerSignIn />} />
           <Route path="/customer-signup" element={<CustomerSignUp />} />

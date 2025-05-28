@@ -7,10 +7,10 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import Navbar from '../../main/layout/Navbar';
-import Footer from '../../main/layout/Footer';
+import Navbar from '../../../components/main/layout/Navbar';
+import Footer from '../../../components/main/layout/Footer';
 import CustomerProfileFormSection from '../../../forms/CustomerProfileFormSection';
-import CustomerProfileHeaderSection from '../sections/customer/CustomerProfileHeaderSection';
+import CustomerProfileHeaderSection from '../../../components/landing/sections/customer/CustomerProfileHeaderSection';
 import axios from 'axios';
 
 interface UserProfile {
@@ -24,7 +24,7 @@ interface UserProfile {
   favoritesCount: number;
 }
 
-const ProfileSection: React.FC = () => {
+const CustomerProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('listings');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -219,4 +219,4 @@ const ProfileSection: React.FC = () => {
   );
 };
 
-export default ProfileSection;
+export default CustomerProfile;
