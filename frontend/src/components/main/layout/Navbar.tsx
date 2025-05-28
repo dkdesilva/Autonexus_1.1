@@ -74,7 +74,7 @@ const Navbar: React.FC = () => {
 
             <div className="flex items-center space-x-4">
               {user && (
-                <Link to="/profile" className="flex items-center space-x-2 cursor-pointer">
+                <Link to="/customer-profile" className="flex items-center space-x-2 cursor-pointer">
                   <img
                     src={
                       user.profileImage ||

@@ -427,6 +427,6 @@ export const getStartedOptions = [
     title: 'Dealership',
     description: 'Comprehensive dealership services',
     icon: <Building2 className="h-12 w-12 text-blue-600 group-hover:text-white transition-colors duration-200" />,
-    link: '/vehicleshop-signup',
+    link: '/vehicledealer-signup',
   },
 ];

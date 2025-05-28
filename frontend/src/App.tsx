@@ -37,7 +37,7 @@ function App() {
           <Route path="/spare-parts" element={<SpareParts />} />
           <Route path="/garages" element={<Garages />} />
           <Route path="/dealerships" element={<Dealerships />} />
-          <Route path="/profile" element={<CustomerProfile />} />
+          <Route path="/customer-profile" element={<CustomerProfile />} />
 
           <Route path="/customer-signin" element={<CustomerSignIn />} />
           <Route path="/customer-signup" element={<CustomerSignUp />} />

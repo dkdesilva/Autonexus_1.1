@@ -6,26 +6,45 @@ import Button from '../../../components/main/ui/Button';
 const VehicleDealershipSignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    companyname: '',
     email: '',
     password: '',
   });
 
+  const [error, setError] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-  const userType = location.state?.userType || 'customer';
+  const userType = location.state?.userType || 'dealership';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData, 'User type:', userType);
-    // In a real app, this would handle registration
-    // For demo purposes, we'll just navigate to the signin page
-    navigate('/signin');
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/dealership/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.message || 'Registration failed');
+        return;
+      }
+
+      const data = await response.json();
+      localStorage.setItem('dealership_token', data.token);
+      navigate('/signin');
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+      console.error(err);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -49,25 +68,25 @@ const VehicleDealershipSignUp: React.FC = () => {
               Sign up as a {userTypeLabels[userType] || 'Customer'}
             </p>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Username
+                <label htmlFor="companyname" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Company Name
                 </label>
                 <input
-                  id="username"
-                  name="username"
+                  id="companyname"
+                  name="companyname"
                   type="text"
                   required
-                  value={formData.username}
+                  value={formData.companyname}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
-                  placeholder="Choose a username"
+                  placeholder="Enter company name"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Email
@@ -83,7 +102,7 @@ const VehicleDealershipSignUp: React.FC = () => {
                   placeholder="your@email.com"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Password
@@ -105,13 +124,13 @@ const VehicleDealershipSignUp: React.FC = () => {
                     onClick={togglePasswordVisibility}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-300 focus:outline-none"
                   >
-                    {showPassword ? 
-                      <EyeOff className="h-5 w-5" /> : 
-                      <Eye className="h-5 w-5" />}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
-              
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
               <div className="pt-4">
                 <Button type="submit" variant="primary" fullWidth>
                   Create Account
@@ -119,7 +138,7 @@ const VehicleDealershipSignUp: React.FC = () => {
               </div>
             </div>
           </form>
-          
+
           <div className="text-center mt-6">
             <p className="text-gray-600 dark:text-gray-300">
               Already have an account?{' '}
@@ -128,7 +147,7 @@ const VehicleDealershipSignUp: React.FC = () => {
               </Link>
             </p>
           </div>
-          
+
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
               By signing up, you agree to our{' '}

@@ -273,6 +273,128 @@ app.get('/api/customer/details', authenticateJWT, (req, res) => {
   });
 });
 
+//Car Dealership
+//Sign Up Car Dealership
+
+app.post('/api/dealership/register', async (req, res) => {
+  const { companyname, email, password } = req.body;
+  if (!companyname || !email || !password) {
+    return res.status(400).json({ message: 'Company name, email, and password are required' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.query(
+      'INSERT INTO car_dealerships (companyname, email, password) VALUES (?, ?, ?)',
+      [companyname, email, hashedPassword],
+      (err, result) => {
+        if (err) {
+          console.error('DB error:', err);
+          return res.status(500).json({ message: 'Email already exists or DB error' });
+        }
+
+        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '5h' });
+        res.status(201).json({ token });
+      }
+    );
+  } catch (err) {
+    console.error('Server error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Login Car Dealership
+app.post('/api/dealership/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and Password are required' });
+  }
+
+  db.query('SELECT * FROM car_dealerships WHERE email = ?', [email], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+    if (result.length === 0) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    bcrypt.compare(password, result[0].password, (err, isMatch) => {
+      if (err) {
+        console.error('bcrypt error:', err);
+        return res.status(500).json({ message: 'Server error' });
+      }
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+      }
+
+      const token = jwt.sign({ id: result[0].id }, process.env.JWT_SECRET, { expiresIn: '5h' });
+      res.status(200).json({ token });
+    });
+  });
+});
+
+//Sparepartshop
+//Sparepartshop Registration
+
+app.post('/api/spareparts/register', async (req, res) => {
+  const { companyname, email, password } = req.body;
+  if (!companyname || !email || !password) {
+    return res.status(400).json({ message: 'Company name, email, and password are required' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.query(
+      'INSERT INTO spareparts (companyname, email, password) VALUES (?, ?, ?)',
+      [companyname, email, hashedPassword],
+      (err, result) => {
+        if (err) {
+          console.error('DB error:', err);
+          return res.status(500).json({ message: 'Email already exists or DB error' });
+        }
+
+        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '5h' });
+        res.status(201).json({ token });
+      }
+    );
+  } catch (err) {
+    console.error('Server error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Sparepartshop Login
+app.post('/api/spareparts/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and Password are required' });
+  }
+
+  db.query('SELECT * FROM spareparts WHERE email = ?', [email], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+    if (result.length === 0) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    bcrypt.compare(password, result[0].password, (err, isMatch) => {
+      if (err) {
+        console.error('bcrypt error:', err);
+        return res.status(500).json({ message: 'Server error' });
+      }
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+      }
+
+      const token = jwt.sign({ id: result[0].id }, process.env.JWT_SECRET, { expiresIn: '5h' });
+      res.status(200).json({ token });
+    });
+  });
+});
+
 
 // Start Server
 app.listen(5000, () => {

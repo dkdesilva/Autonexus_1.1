@@ -30,3 +30,24 @@ CREATE TABLE customer_details (
 );
 
 select * from customer_details;
+
+CREATE TABLE car_dealerships (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  companyname VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  is_deleted TINYINT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+select * from car_dealerships;
+
+CREATE TABLE spareparts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  companyname VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  is_deleted TINYINT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+select * from spareparts;
