@@ -17,8 +17,8 @@ import SparePartShopSignIn from './pages/main/spare_part_shop/SparePartShopSignI
 import SparePartShopSignUp from './pages/main/spare_part_shop/SparePartShopSignUp';
 import VehicleDealershipSignIn from './pages/main/vehicle_dealership/VehicleDealershipSignIn';
 import VehicleDealershipSignUp from './pages/main/vehicle_dealership/VehicleDealershipSignUp';
-import VehicleShopSignIn from './pages/main/vehicle_shop/VehicleShopSignIn';
-import VehicleShopSignUp from './pages/main/vehicle_shop/VehicleShopSignUp';
+import GarageSignIn from './pages/main/garage/GarageSignIn';
+import GarageSignUp from './pages/main/garage/GarageSignUp';
 import CustomerProfile from './pages/main/customer/CustomerProfile';
 
 function App() {
@@ -45,8 +45,8 @@ function App() {
           <Route path="/sparepart-signup" element={<SparePartShopSignUp />} />
           <Route path="/vehicledealer-signin" element={<VehicleDealershipSignIn />} />
           <Route path="/vehicledealer-signup" element={<VehicleDealershipSignUp />} />
-          <Route path="/vehicleshop-signin" element={<VehicleShopSignIn />} />
-          <Route path="/vehicleshop-signup" element={<VehicleShopSignUp />} />
+          <Route path="/garage-signin" element={<GarageSignIn />} />
+          <Route path="/garage-signup" element={<GarageSignUp />} />
         </Routes>
       </Router>
     </ThemeProvider>

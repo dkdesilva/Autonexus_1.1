@@ -416,11 +416,11 @@ export const getStartedOptions = [
     link: '/sparepart-signup',
   },
   {
-    id: 'shop',
-    title: 'Vehicle Shop',
-    description: 'List and sell vehicles in your inventory',
+    id: 'garage',
+    title: 'Garage',
+    description: 'List your garage and offer repair services',
     icon: <Truck className="h-12 w-12 text-blue-600 group-hover:text-white transition-colors duration-200" />,
-    link: '/vehicleshop-signup',
+    link: '/garage-signup',
   },
   {
     id: 'dealership',

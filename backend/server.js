@@ -62,23 +62,49 @@ const upload = multer({
 
 // Customer Registration
 app.post('/api/cusregister', async (req, res) => {
-  const { username, email, password } = req.body;
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    db.query(
-      'INSERT INTO customers (username, email, password) VALUES (?, ?, ?)',
-      [username, email, hashedPassword],
-      (err, result) => {
-        if (err) return res.status(500).json({ message: 'User already exists or DB error' });
+  const { email, password } = req.body;
 
-        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '5h' });
-        res.status(201).json({ token });
+  try {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const userType = 'customer'; // automatic user_type
+
+    // Insert into users table
+    db.query(
+      'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
+      [email, hashedPassword, userType],
+      (err, userResult) => {
+        if (err) {
+          return res.status(500).json({ message: 'User already exists or DB error' });
+        }
+
+        const newUserId = userResult.insertId;
+
+        // Insert only user_id into customer table
+        db.query(
+          'INSERT INTO customer (user_id) VALUES (?)',
+          [newUserId],
+          (err2) => {
+            if (err2) {
+              // Rollback: delete user if customer insert fails
+              db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
+
+              return res.status(500).json({ message: 'Failed to create customer record' });
+            }
+
+            // Generate JWT token with user_id
+            const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
+            res.status(201).json({ token });
+          }
+        );
       }
     );
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Customer Login
 app.post('/api/cuslogin', (req, res) => {
@@ -87,7 +113,7 @@ app.post('/api/cuslogin', (req, res) => {
 
   console.log('Login attempt:', email);
 
-  db.query('SELECT * FROM customers WHERE email = ?', [email], (err, result) => {
+  db.query('SELECT * FROM users WHERE email = ?', [email], (err, result) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ message: 'Database error' });
@@ -114,6 +140,147 @@ app.post('/api/cuslogin', (req, res) => {
   });
 });
 
+//Car Dealership
+
+// Car Dealership Registration
+app.post('/api/cardealershipregister', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const userType = 'dealership'; // automatic user_type
+
+    // Insert into users table
+    db.query(
+      'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
+      [email, hashedPassword, userType],
+      (err, userResult) => {
+        if (err) {
+          return res.status(500).json({ message: 'User already exists or DB error' });
+        }
+
+        const newUserId = userResult.insertId;
+
+        // Insert only user_id into dealership  table
+        db.query(
+          'INSERT INTO car_dealerships (user_id) VALUES (?)',
+          [newUserId],
+          (err2) => {
+            if (err2) {
+              // Rollback: delete user if dealership insert fails
+              db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
+
+              return res.status(500).json({ message: 'Failed to create dealership record' });
+            }
+
+            // Generate JWT token with user_id
+            const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
+            res.status(201).json({ token });
+          }
+        );
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+//Garages
+
+// Garages Registration
+app.post('/api/garageregister', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const userType = 'garage'; // automatic user_type
+
+    // Insert into users table
+    db.query(
+      'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
+      [email, hashedPassword, userType],
+      (err, userResult) => {
+        if (err) {
+          return res.status(500).json({ message: 'User already exists or DB error' });
+        }
+
+        const newUserId = userResult.insertId;
+
+        // Insert only user_id into garage  table
+        db.query(
+          'INSERT INTO garages (user_id) VALUES (?)',
+          [newUserId],
+          (err2) => {
+            if (err2) {
+              // Rollback: delete user if garage insert fails
+              db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
+
+              return res.status(500).json({ message: 'Failed to create garage record' });
+            }
+
+            // Generate JWT token with user_id
+            const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
+            res.status(201).json({ token });
+          }
+        );
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+//Spare Parts Shop
+
+// Spare Parts Shop Registration
+app.post('/api/sparepartregister', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const userType = 'sparepart'; // automatic user_type
+
+    // Insert into users table
+    db.query(
+      'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
+      [email, hashedPassword, userType],
+      (err, userResult) => {
+        if (err) {
+          return res.status(500).json({ message: 'User already exists or DB error' });
+        }
+
+        const newUserId = userResult.insertId;
+
+        // Insert only user_id into spareparts  table
+        db.query(
+          'INSERT INTO spareparts (user_id) VALUES (?)',
+          [newUserId],
+          (err2) => {
+            if (err2) {
+              // Rollback: delete user if spareparts insert fails
+              db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
+
+              return res.status(500).json({ message: 'Failed to create sparepart record' });
+            }
+
+            // Generate JWT token with user_id
+            const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
+            res.status(201).json({ token });
+          }
+        );
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Customer Logout
 app.post('/api/cuslogout', (req, res) => {

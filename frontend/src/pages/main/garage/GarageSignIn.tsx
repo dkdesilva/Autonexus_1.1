@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import Button from '../../../components/main/ui/Button';
 
-const VehicleShopSignIn: React.FC = () => {
+const GarageSignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -130,4 +130,4 @@ const VehicleShopSignIn: React.FC = () => {
   );
 };
 
-export default VehicleShopSignIn;
+export default GarageSignIn;
