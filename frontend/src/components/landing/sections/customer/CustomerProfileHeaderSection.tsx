@@ -4,10 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import CustomerProfileImageSection from './CustomerProfileImageSection';
 
 interface UserProfile {
-  id: number;
-  username: string;
-  email: string;
-  created_at: string;
+  first_name: string;
+  customer_created_at: string;
   listingsCount?: number;
   soldCount?: number;
   favoritesCount?: number;
@@ -24,7 +22,6 @@ const CustomerProfileHeaderSection: React.FC = () => {
 
     const fetchUserProfile = async () => {
       try {
-        // Try both storages for token
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
         if (!token) {
@@ -33,7 +30,8 @@ const CustomerProfileHeaderSection: React.FC = () => {
           return;
         }
 
-        const res = await fetch('http://localhost:5000/api/user', {
+        // Use your actual API endpoint here
+        const res = await fetch('http://localhost:5000/api/customer/details', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -42,7 +40,6 @@ const CustomerProfileHeaderSection: React.FC = () => {
         if (!res.ok) {
           if (res.status === 401 || res.status === 403) {
             setError('Unauthorized. Please login again.');
-            // Optionally clear tokens here to force re-login
             localStorage.removeItem('token');
             sessionStorage.removeItem('token');
           } else {
@@ -67,7 +64,7 @@ const CustomerProfileHeaderSection: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
-    navigate('/signin'); // Redirect to sign-in page
+    navigate('/signin');
   };
 
   if (loading) return <div className="text-center mt-10">Loading...</div>;
@@ -84,13 +81,10 @@ const CustomerProfileHeaderSection: React.FC = () => {
           <div className="mt-4 md:mt-0 flex-1">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold">{user?.username}</h1>
+                <h1 className="text-2xl font-bold">{user?.first_name}</h1>
                 <p className="text-gray-600 dark:text-gray-400">
                   Member since{' '}
-                  {new Date(user!.created_at).toLocaleString('default', {
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  {new Date(user!.customer_created_at).getFullYear()}
                 </p>
               </div>
               <div className="mt-4 md:mt-0 flex space-x-3">

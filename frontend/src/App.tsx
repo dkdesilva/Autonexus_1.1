@@ -20,6 +20,8 @@ import VehicleDealershipSignUp from './pages/main/vehicle_dealership/VehicleDeal
 import GarageSignIn from './pages/main/garage/GarageSignIn';
 import GarageSignUp from './pages/main/garage/GarageSignUp';
 import CustomerProfile from './pages/main/customer/CustomerProfile';
+import SparePartsProfle from './pages/main/spare_part_shop/SparePartsProfle';
+import CustomerProfileForm from './forms/customer/CustomerProfileForm';
 
 function App() {
   return (
@@ -38,6 +40,7 @@ function App() {
           <Route path="/garages" element={<Garages />} />
           <Route path="/dealerships" element={<Dealerships />} />
           <Route path="/customer-profile" element={<CustomerProfile />} />
+          <Route path="/sparepart-profile" element={<SparePartsProfle />} />
 
           <Route path="/customer-signin" element={<CustomerSignIn />} />
           <Route path="/customer-signup" element={<CustomerSignUp />} />
@@ -47,6 +50,10 @@ function App() {
           <Route path="/vehicledealer-signup" element={<VehicleDealershipSignUp />} />
           <Route path="/garage-signin" element={<GarageSignIn />} />
           <Route path="/garage-signup" element={<GarageSignUp />} />
+
+
+
+          <Route path="/cusform" element={<CustomerProfileForm />} />
         </Routes>
       </Router>
     </ThemeProvider>

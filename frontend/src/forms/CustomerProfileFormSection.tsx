@@ -4,19 +4,22 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
-  username: string;
-  email: string;
-  phone_number: string;
+  cus_id?: number;
+  user_id?: number;
   first_name: string;
   middle_name: string;
   last_name: string;
-  date_of_birth: string;
+  birthday: string;
   gender: string;
+  customer_created_at?: string;
+  email: string;
+  user_type?: string;
+  phone_number: string;
   address: string;
   province: string;
   district: string;
-  postal_code: string;
-  created_at: string;
+  user_created_at?: string;
+  username?: string;
 }
 
 const animationProps = {
@@ -31,7 +34,9 @@ const FormGroup: React.FC<{ label: string; children: React.ReactNode }> = ({
   children,
 }) => (
   <div className="flex flex-col">
-    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      {label}
+    </label>
     <div className="mt-1">{children}</div>
   </div>
 );
@@ -75,7 +80,7 @@ const CustomerProfileFormSection: React.FC = () => {
 
     const fetchUserProfile = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/customer/get/fullprofile");
+        const res = await axios.get("http://localhost:5000/api/customer/details");
         setProfile(res.data);
         setLoading(false);
       } catch (err: any) {
@@ -85,10 +90,13 @@ const CustomerProfileFormSection: React.FC = () => {
           sessionStorage.removeItem("token");
           setAuthToken(null);
           navigate("/signin");
+        } else if (err.response?.status === 404) {
+          setError("No customer details found.");
+          setLoading(false);
         } else {
           setError("Failed to fetch profile data.");
+          setLoading(false);
         }
-        setLoading(false);
       }
     };
 
@@ -100,22 +108,22 @@ const CustomerProfileFormSection: React.FC = () => {
     if (!formRef.current) return;
 
     const formData = new FormData(formRef.current);
+
     const payload = {
       first_name: formData.get("first_name"),
       middle_name: formData.get("middle_name"),
       last_name: formData.get("last_name"),
-      date_of_birth: formData.get("date_of_birth"),
-      phone_number: formData.get("phone_number"),
+      birthday: formData.get("date_of_birth"),
       gender: formData.get("gender"),
+      phone_number: formData.get("phone_number"),
       address: formData.get("address"),
       province: formData.get("province"),
       district: formData.get("district"),
-      postal_code: formData.get("postal_code"),
     };
 
     try {
       const res = await axios.put(
-        "http://localhost:5000/api/customer/update/details",
+        "http://localhost:5000/api/customer/update-profile",
         payload
       );
       alert(res.data.message);
@@ -138,16 +146,8 @@ const CustomerProfileFormSection: React.FC = () => {
       <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
         <SectionHeader title="Personal Information" />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormGroup label="Username">
-            <input
-              type="text"
-              name="username"
-              defaultValue={profile?.username}
-              disabled
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
           <FormGroup label="Email">
             <input
               type="email"
@@ -157,15 +157,11 @@ const CustomerProfileFormSection: React.FC = () => {
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
-        </div>
-
-        <SectionHeader title="Additional Details" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormGroup label="First Name">
             <input
               type="text"
               name="first_name"
-              defaultValue={profile?.first_name}
+              defaultValue={profile?.first_name || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -173,7 +169,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="text"
               name="middle_name"
-              defaultValue={profile?.middle_name}
+              defaultValue={profile?.middle_name || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -181,7 +177,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="text"
               name="last_name"
-              defaultValue={profile?.last_name}
+              defaultValue={profile?.last_name || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -189,7 +185,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="date"
               name="date_of_birth"
-              defaultValue={profile?.date_of_birth?.split("T")[0]}
+              defaultValue={profile?.birthday ? profile.birthday.split("T")[0] : ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -197,7 +193,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="text"
               name="phone_number"
-              defaultValue={profile?.phone_number}
+              defaultValue={profile?.phone_number || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -217,7 +213,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="text"
               name="address"
-              defaultValue={profile?.address}
+              defaultValue={profile?.address || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -225,7 +221,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="text"
               name="province"
-              defaultValue={profile?.province}
+              defaultValue={profile?.province || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>
@@ -233,15 +229,7 @@ const CustomerProfileFormSection: React.FC = () => {
             <input
               type="text"
               name="district"
-              defaultValue={profile?.district}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Postal Code">
-            <input
-              type="text"
-              name="postal_code"
-              defaultValue={profile?.postal_code}
+              defaultValue={profile?.district || ""}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </FormGroup>

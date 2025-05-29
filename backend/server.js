@@ -31,12 +31,13 @@ const authenticateJWT = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(403).json({ message: 'Invalid or expired token.' });
-    req.userId = decoded.id;
+    req.user = decoded;
     next();
   });
 };
 
-// Multer config for storing images in /public/images
+
+// ------------------------- Multer config for storing images in /public/images -------------------------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, 'public', 'images');
@@ -58,9 +59,9 @@ const upload = multer({
   },
 });
 
-//Customer
+// ------------------------- Customer -------------------------
 
-// Customer Registration
+// ------------------------- Customer Registration -------------------------
 app.post('/api/cusregister', async (req, res) => {
   const { email, password } = req.body;
 
@@ -106,7 +107,7 @@ app.post('/api/cusregister', async (req, res) => {
 });
 
 
-// Customer Login
+// ------------------------- Customer Login -------------------------
 app.post('/api/cuslogin', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: 'Email and Password are required' });
@@ -140,42 +141,63 @@ app.post('/api/cuslogin', (req, res) => {
   });
 });
 
-//Car Dealership
+// ------------------------- Update Customer Profile -------------------------
+app.put('/api/customer/update-profile', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const {
+    phone_number,
+    address,
+    province,
+    district,
+    first_name,
+    middle_name,
+    last_name,
+    gender,
+    birthday
+  } = req.body;
 
-// Car Dealership Registration
-app.post('/api/cardealershipregister', async (req, res) => {
+  try {
+    await db.promise().query(
+      `UPDATE users SET phone_number=?, address=?, province=?, district=? WHERE user_id=? AND is_deleted=0`,
+      [phone_number, address, province, district, userId]
+    );
+
+    await db.promise().query(
+      `UPDATE customer SET first_name=?, middle_name=?, last_name=?, gender=?, birthday=? WHERE user_id=? AND is_deleted=0`,
+      [first_name, middle_name, last_name, gender, birthday, userId]
+    );
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    console.error('Update profile error:', err);
+    res.status(500).json({ message: 'Server error updating profile' });
+  }
+});
+
+// ------------------------- Other Registrations -------------------------
+
+const registerHandler = (userType, tableName) => async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const userType = 'dealership'; // automatic user_type
-
-    // Insert into users table
     db.query(
       'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
       [email, hashedPassword, userType],
       (err, userResult) => {
-        if (err) {
-          return res.status(500).json({ message: 'User already exists or DB error' });
-        }
+        if (err) return res.status(500).json({ message: 'User already exists or DB error' });
 
         const newUserId = userResult.insertId;
-
-        // Insert only user_id into dealership  table
         db.query(
-          'INSERT INTO car_dealerships (user_id) VALUES (?)',
+          `INSERT INTO ${tableName} (user_id) VALUES (?)`,
           [newUserId],
           (err2) => {
             if (err2) {
-              // Rollback: delete user if dealership insert fails
               db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
-
-              return res.status(500).json({ message: 'Failed to create dealership record' });
+              return res.status(500).json({ message: `Failed to create ${userType} record` });
             }
 
-            // Generate JWT token with user_id
             const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
             res.status(201).json({ token });
           }
@@ -185,181 +207,45 @@ app.post('/api/cardealershipregister', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
-});
+};
 
-//Garages
+app.post('/api/cardealershipregister', registerHandler('dealership', 'car_dealerships'));
+app.post('/api/garageregister', registerHandler('garage', 'garages'));
+app.post('/api/sparepartregister', registerHandler('sparepart', 'spareparts'));
 
-// Garages Registration
-app.post('/api/garageregister', async (req, res) => {
+// ------------------------- Single Login -------------------------
+
+app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+    if (err || results.length === 0) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-    const userType = 'garage'; // automatic user_type
+    const user = results[0];
+    const match = await bcrypt.compare(password, user.password);
 
-    // Insert into users table
-    db.query(
-      'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
-      [email, hashedPassword, userType],
-      (err, userResult) => {
-        if (err) {
-          return res.status(500).json({ message: 'User already exists or DB error' });
-        }
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-        const newUserId = userResult.insertId;
+    // Generate JWT token
+    const token = jwt.sign({ id: user.user_id, user_type: user.user_type }, process.env.JWT_SECRET, { expiresIn: '5h' });
 
-        // Insert only user_id into garage  table
-        db.query(
-          'INSERT INTO garages (user_id) VALUES (?)',
-          [newUserId],
-          (err2) => {
-            if (err2) {
-              // Rollback: delete user if garage insert fails
-              db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
-
-              return res.status(500).json({ message: 'Failed to create garage record' });
-            }
-
-            // Generate JWT token with user_id
-            const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
-            res.status(201).json({ token });
-          }
-        );
-      }
-    );
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
+    res.status(200).json({
+      token,
+      user_type: user.user_type,
+    });
+  });
 });
 
-
-//Spare Parts Shop
-
-// Spare Parts Shop Registration
-app.post('/api/sparepartregister', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const userType = 'sparepart'; // automatic user_type
-
-    // Insert into users table
-    db.query(
-      'INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)',
-      [email, hashedPassword, userType],
-      (err, userResult) => {
-        if (err) {
-          return res.status(500).json({ message: 'User already exists or DB error' });
-        }
-
-        const newUserId = userResult.insertId;
-
-        // Insert only user_id into spareparts  table
-        db.query(
-          'INSERT INTO spareparts (user_id) VALUES (?)',
-          [newUserId],
-          (err2) => {
-            if (err2) {
-              // Rollback: delete user if spareparts insert fails
-              db.query('DELETE FROM users WHERE user_id = ?', [newUserId], () => {});
-
-              return res.status(500).json({ message: 'Failed to create sparepart record' });
-            }
-
-            // Generate JWT token with user_id
-            const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, { expiresIn: '5h' });
-            res.status(201).json({ token });
-          }
-        );
-      }
-    );
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 // Customer Logout
 app.post('/api/cuslogout', (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
-
-// Insert or Update Customer Profile Details
-app.put('/api/customer/update/details', authenticateJWT, (req, res) => {
-  const {
-    first_name, middle_name, last_name, date_of_birth,
-    phone_number, gender, address, province, district, postal_code
-  } = req.body;
-
-  db.query('SELECT * FROM customer_details WHERE customer_id = ?', [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-
-    const values = [
-      first_name, middle_name, last_name, date_of_birth,
-      phone_number, gender, address, province, district, postal_code, req.userId
-    ];
-
-    if (result.length > 0) {
-      // Update
-      const sql = `
-        UPDATE customer_details SET
-          first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?,
-          phone_number = ?, gender = ?, address = ?, province = ?, district = ?,
-          postal_code = ?
-        WHERE customer_id = ?
-      `;
-      db.query(sql, values, (err) => {
-        if (err) return res.status(500).json({ message: 'Update failed' });
-        res.status(200).json({ message: 'Customer details updated successfully' });
-      });
-    } else {
-      // Insert
-      const insertSql = `
-        INSERT INTO customer_details (
-          customer_id, first_name, middle_name, last_name, date_of_birth,
-          phone_number, gender, address, province, district, postal_code
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      db.query(insertSql, [req.userId, ...values.slice(0, -1)], (err) => {
-        if (err) return res.status(500).json({ message: 'Insert failed' });
-        res.status(201).json({ message: 'Customer details added successfully' });
-      });
-    }
-  });
-});
-
-// Get Full Customer Profile (excluding image)
-app.get('/api/customer/get/fullprofile', authenticateJWT, (req, res) => {
-  const sql = `
-    SELECT 
-      c.id AS customer_id,
-      c.username,
-      c.email,
-      cd.first_name,
-      cd.middle_name,
-      cd.last_name,
-      cd.date_of_birth,
-      cd.phone_number,
-      cd.gender,
-      cd.address,
-      cd.province,
-      cd.district,
-      cd.postal_code,
-      cd.created_at AS created_at
-    FROM customers c
-    LEFT JOIN customer_details cd ON c.id = cd.customer_id
-    WHERE c.id = ?
-  `;
-  db.query(sql, [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    if (result.length === 0) return res.status(404).json({ message: 'Customer not found' });
-    res.status(200).json(result[0]);
-  });
-});
 
 
 // Total Customer Count
@@ -370,197 +256,126 @@ app.get('/api/customers/count', (req, res) => {
   });
 });
 
-// Basic User Info
-app.get('/api/user', authenticateJWT, (req, res) => {
-  db.query('SELECT * FROM customers WHERE id = ?', [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    if (result.length === 0) return res.status(404).json({ message: 'User not found' });
+// ------------------------- Basic User Info Display Navbar -------------------------
 
-    const { password, ...userDetails } = result[0];
-    res.status(200).json(userDetails);
+app.get('/api/user', authenticateJWT, (req, res) => {
+  const userId = req.user.id;
+  db.query('SELECT * FROM users WHERE user_id = ?', [userId], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (!results.length) return res.status(404).json({ message: 'User not found' });
+
+    const user = results[0];
+    res.json({
+      email: user.email,
+      user_type: user.user_type,
+      profileImage: user.profile_image || null,
+    });
+  });
+});
+
+// ------------------------- Get Customer Details (including user info) -------------------------
+
+app.get('/api/customer/details', authenticateJWT, (req, res) => {
+  // We get the user_id from the JWT token (you can adjust this as per your token payload)
+  const userId = req.user.id;
+
+  const sql = `
+    SELECT 
+      c.cus_id,
+      c.user_id,
+      c.first_name,
+      c.middle_name,
+      c.last_name,
+      c.gender,
+      c.birthday,
+      c.created_at AS customer_created_at,
+      u.user_id AS user_user_id,
+      u.email,
+      u.user_type,
+      u.phone_number,
+      u.address,
+      u.province,
+      u.district,
+      u.created_at AS user_created_at
+    FROM users u
+    RIGHT JOIN customer c ON u.user_id = c.user_id
+    WHERE c.user_id = ? AND c.is_deleted = 0 AND (u.is_deleted = 0 OR u.is_deleted IS NULL)
+  `;
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Database query error' });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No customer details found' });
+    }
+    res.json(results[0]);
   });
 });
 
 
-//Image Part
-// Upload profile image
+// ------------------------- Upload profile image -------------------------
+
 app.post('/api/customer/upload-profile-image', authenticateJWT, upload.single('profile_image'), (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
   res.status(200).json({ filename: req.file.filename });
 });
 
-// Save uploaded profile image filename to DB (customer_details table)
+// ------------------------- Save uploaded profile image filename to database -------------------------
+
 app.post('/api/customer/save-profile-image', authenticateJWT, (req, res) => {
   const { filename } = req.body;
+  const userId = req.user.id; // Changed from req.userId to req.user.id
+  
   if (!filename) return res.status(400).json({ message: 'Filename is required' });
 
-  const sqlCheck = 'SELECT * FROM customer_details WHERE customer_id = ?';
-  db.query(sqlCheck, [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-
-    if (result.length > 0) {
-      const sqlUpdate = 'UPDATE customer_details SET profile_picture = ? WHERE customer_id = ?';
-      db.query(sqlUpdate, [filename, req.userId], (err2) => {
-        if (err2) return res.status(500).json({ message: 'Failed to save profile image' });
-        res.status(200).json({ message: 'Profile image updated successfully' });
-      });
-    } else {
-      // Insert new details if not exists
-      const sqlInsert = 'INSERT INTO customer_details (customer_id, profile_picture) VALUES (?, ?)';
-      db.query(sqlInsert, [req.userId, filename], (err3) => {
-        if (err3) return res.status(500).json({ message: 'Failed to save profile image' });
-        res.status(201).json({ message: 'Profile image saved successfully' });
-      });
+  const sql = 'UPDATE users SET profile_picture = ? WHERE user_id = ? AND is_deleted = 0';
+  db.query(sql, [filename, userId], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Failed to save profile image' });
     }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found or deleted' });
+    }
+
+    res.status(200).json({ 
+      message: 'Profile image updated successfully',
+      profile_picture: filename 
+    });
   });
 });
 
-// Get user profile image info
+// ------------------------- Get user profile image info -------------------------
+
 app.get('/api/customer/profile-image', authenticateJWT, (req, res) => {
-  const sql = 'SELECT profile_picture FROM customer_details WHERE customer_id = ?';
-  db.query(sql, [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    if (result.length === 0 || !result[0].profile_picture) {
+  const userId = req.user.id; // Changed from req.userId to req.user.id
+  
+  const sql = 'SELECT profile_picture FROM users WHERE user_id = ? AND is_deleted = 0';
+  db.query(sql, [userId], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+    
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const profilePicture = result[0].profile_picture;
+    if (!profilePicture) {
       return res.status(404).json({ message: 'No profile image found' });
     }
-    res.status(200).json({ profile_picture: result[0].profile_picture });
+    
+    res.status(200).json({ profile_picture: profilePicture });
   });
 });
 
-// Serve static images from /public/images
+// ------------------------- Serve static images from /public/images-------------------------
+
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
-
-
-// Get Profile Details
-app.get('/api/customer/details', authenticateJWT, (req, res) => {
-  db.query('SELECT * FROM customer_details WHERE customer_id = ?', [req.userId], (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    if (result.length === 0) return res.status(404).json({ message: 'No profile details found' });
-    res.status(200).json(result[0]);
-  });
-});
-
-//Car Dealership
-//Sign Up Car Dealership
-
-app.post('/api/dealership/register', async (req, res) => {
-  const { companyname, email, password } = req.body;
-  if (!companyname || !email || !password) {
-    return res.status(400).json({ message: 'Company name, email, and password are required' });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    db.query(
-      'INSERT INTO car_dealerships (companyname, email, password) VALUES (?, ?, ?)',
-      [companyname, email, hashedPassword],
-      (err, result) => {
-        if (err) {
-          console.error('DB error:', err);
-          return res.status(500).json({ message: 'Email already exists or DB error' });
-        }
-
-        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '5h' });
-        res.status(201).json({ token });
-      }
-    );
-  } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Login Car Dealership
-app.post('/api/dealership/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and Password are required' });
-  }
-
-  db.query('SELECT * FROM car_dealerships WHERE email = ?', [email], (err, result) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ message: 'Database error' });
-    }
-    if (result.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    bcrypt.compare(password, result[0].password, (err, isMatch) => {
-      if (err) {
-        console.error('bcrypt error:', err);
-        return res.status(500).json({ message: 'Server error' });
-      }
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-
-      const token = jwt.sign({ id: result[0].id }, process.env.JWT_SECRET, { expiresIn: '5h' });
-      res.status(200).json({ token });
-    });
-  });
-});
-
-//Sparepartshop
-//Sparepartshop Registration
-
-app.post('/api/spareparts/register', async (req, res) => {
-  const { companyname, email, password } = req.body;
-  if (!companyname || !email || !password) {
-    return res.status(400).json({ message: 'Company name, email, and password are required' });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    db.query(
-      'INSERT INTO spareparts (companyname, email, password) VALUES (?, ?, ?)',
-      [companyname, email, hashedPassword],
-      (err, result) => {
-        if (err) {
-          console.error('DB error:', err);
-          return res.status(500).json({ message: 'Email already exists or DB error' });
-        }
-
-        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '5h' });
-        res.status(201).json({ token });
-      }
-    );
-  } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Sparepartshop Login
-app.post('/api/spareparts/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and Password are required' });
-  }
-
-  db.query('SELECT * FROM spareparts WHERE email = ?', [email], (err, result) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ message: 'Database error' });
-    }
-    if (result.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    bcrypt.compare(password, result[0].password, (err, isMatch) => {
-      if (err) {
-        console.error('bcrypt error:', err);
-        return res.status(500).json({ message: 'Server error' });
-      }
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-
-      const token = jwt.sign({ id: result[0].id }, process.env.JWT_SECRET, { expiresIn: '5h' });
-      res.status(200).json({ token });
-    });
-  });
-});
 
 
 // Start Server

@@ -18,8 +18,6 @@ CREATE TABLE users (
 
 select * from users;
 
-DROP TABLE IF EXISTS garages;
-
 CREATE TABLE customer (
     cus_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

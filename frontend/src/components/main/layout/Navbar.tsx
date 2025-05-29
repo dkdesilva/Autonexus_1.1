@@ -12,8 +12,14 @@ const Navbar: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
     axios
-      .get('http://localhost:5000/api/user')
+      .get('http://localhost:5000/api/user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => setUser(res.data))
       .catch((err) => console.error('User fetch error:', err));
   }, []);
@@ -31,7 +37,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className="fixed w-full bg-white dark:bg-gray-900 shadow-md z-50 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl px-2 sm:px-4 lg:px-6 mx-auto">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center h-10 w-28 relative">
             <img
@@ -46,7 +52,7 @@ const Navbar: React.FC = () => {
             />
           </Link>
 
-          <div className="hidden md:flex ml-10 space-x-4">
+          <div className="hidden md:flex ml-4 space-x-4">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -83,7 +89,7 @@ const Navbar: React.FC = () => {
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover border-2 border-primary-500"
                   />
-                  <span className="text-sm font-medium dark:text-white">{user.username}</span>
+                  <span className="text-sm font-medium dark:text-white">{user.user_type}</span>
                 </Link>
               )}
             </div>
