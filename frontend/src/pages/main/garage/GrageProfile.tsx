@@ -24,7 +24,7 @@ interface UserProfile {
   favoritesCount: number;
 }
 
-const CustomerProfile: React.FC = () => {
+const GrageProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('listings');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -219,4 +219,4 @@ const CustomerProfile: React.FC = () => {
   );
 };
 
-export default CustomerProfile;
+export default GrageProfile;

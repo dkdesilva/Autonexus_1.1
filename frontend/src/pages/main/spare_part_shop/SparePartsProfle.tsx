@@ -9,7 +9,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from '../../../components/main/layout/Navbar';
 import Footer from '../../../components/main/layout/Footer';
-import CustomerProfileFormSection from '../../../forms/CustomerProfileFormSection';
+import CustomerProfileFormSection from '../../../components/landing/sections/customer/CustomerProfileFormSection';
 import CustomerProfileHeaderSection from '../../../components/landing/sections/customer/CustomerProfileHeaderSection';
 import axios from 'axios';
 
