@@ -22,6 +22,10 @@ import GarageSignUp from './pages/main/garage/GarageSignUp';
 import CustomerProfile from './pages/main/customer/CustomerProfile';
 import SparePartsProfle from './pages/main/spare_part_shop/SparePartsProfle';
 import CustomerProfileForm from './forms/customer/CustomerProfileForm';
+import GarageProfileForm from './forms/grage/GarageProfileForm';
+import GarageProfileFormSection from './components/landing/sections/garage/GarageProfileFormSection';
+import GrageProfile from './pages/main/garage/GrageProfile';
+import VehicleDealershipProfile from './pages/main/vehicle_dealership/VehicleDealershipProfile';
 
 function App() {
   return (
@@ -39,8 +43,11 @@ function App() {
           <Route path="/spare-parts" element={<SpareParts />} />
           <Route path="/garages" element={<Garages />} />
           <Route path="/dealerships" element={<Dealerships />} />
+
           <Route path="/customer-profile" element={<CustomerProfile />} />
           <Route path="/sparepart-profile" element={<SparePartsProfle />} />
+          <Route path="/garage-profile" element={<GrageProfile />} />
+          <Route path="/dealership-profile" element={<VehicleDealershipProfile />} />
 
           <Route path="/customer-signin" element={<CustomerSignIn />} />
           <Route path="/customer-signup" element={<CustomerSignUp />} />
@@ -54,6 +61,7 @@ function App() {
 
 
           <Route path="/cusform" element={<CustomerProfileForm />} />
+          <Route path="/garageform" element={<GarageProfileForm />} />
         </Routes>
       </Router>
     </ThemeProvider>

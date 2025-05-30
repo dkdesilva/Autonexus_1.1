@@ -9,9 +9,9 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from '../../../components/main/layout/Navbar';
 import Footer from '../../../components/main/layout/Footer';
-import CustomerProfileFormSection from '../../../components/landing/sections/customer/CustomerProfileFormSection';
-import CustomerProfileHeaderSection from '../../../components/landing/sections/customer/CustomerProfileHeaderSection';
 import axios from 'axios';
+import SparepartProfileFormSection from '../../../components/landing/sections/spare_part_shop/SparepartProfileFormSection';
+import SparepartProfileHeaderSection from '../../../components/landing/sections/spare_part_shop/SparepartProfileHeaderSection';
 
 interface UserProfile {
   username: string;
@@ -119,7 +119,7 @@ const SparePartsProfle: React.FC = () => {
       <div className="space-y-8 sm:px-8 md:px-12 lg:px-24 pb-16 pt-20">
         {/* Profile Header */}
 
-        <CustomerProfileHeaderSection/>
+        <SparepartProfileHeaderSection/>
         {/* Tabs Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
           {/* Tab Buttons */}
@@ -206,7 +206,7 @@ const SparePartsProfle: React.FC = () => {
                 <motion.div key="settings" {...animationProps}>
                   <h2 className="text-xl font-semibold mb-6">Settings</h2>
                   <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-8">
-                    <CustomerProfileFormSection/>
+                    <SparepartProfileFormSection/>
                   </div>
                 </motion.div>
               )}  

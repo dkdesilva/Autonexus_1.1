@@ -79,19 +79,33 @@ const Navbar: React.FC = () => {
             </button>
 
             <div className="flex items-center space-x-4">
-              {user && (
-                <Link to="/customer-profile" className="flex items-center space-x-2 cursor-pointer">
-                  <img
-                    src={
-                      user.profileImage ||
-                      'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg'
-                    }
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover border-2 border-primary-500"
-                  />
-                  <span className="text-sm font-medium dark:text-white">{user.user_type}</span>
-                </Link>
-              )}
+{user && (
+  <Link
+    to={
+      user.user_type === 'customer'
+        ? '/customer-profile'
+        : user.user_type === 'garage'
+        ? '/garage-profile'
+        : user.user_type === 'dealership'
+        ? '/dealership-profile'
+        : user.user_type === 'sparepart'
+        ? '/sparepart-profile'
+        : '/get-started' // fallback
+    }
+    className="flex items-center space-x-2 cursor-pointer"
+  >
+    <img
+      src={
+        user.profileImage ||
+        'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg'
+      }
+      alt="Profile"
+      className="w-8 h-8 rounded-full object-cover border-2 border-primary-500"
+    />
+    <span className="text-sm font-medium dark:text-white">{user.user_type}</span>
+  </Link>
+)}
+
             </div>
 
             <Link

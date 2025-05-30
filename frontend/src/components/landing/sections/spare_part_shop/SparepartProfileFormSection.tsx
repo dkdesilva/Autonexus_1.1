@@ -3,23 +3,17 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-interface UserProfile {
-  cus_id?: number;
-  user_id?: number;
-  first_name: string;
-  middle_name: string;
-  last_name: string;
-  birthday: string;
-  gender: string;
-  customer_created_at?: string;
-  email: string;
-  user_type?: string;
+interface DealershipProfile {
   phone_number: string;
   address: string;
   province: string;
   district: string;
-  user_created_at?: string;
-  username?: string;
+  company_name: string;
+  description: string;
+  founded_year: string;
+  owner_name: string;
+  opening_days: string;
+  opening_hours: string;
 }
 
 const animationProps = {
@@ -29,14 +23,23 @@ const animationProps = {
   transition: { duration: 0.3 },
 };
 
-const FormGroup: React.FC<{ label: string; children: React.ReactNode }> = ({
-  label,
-  children,
-}) => (
+const openingHoursOptions = [
+  "8:00 AM – 6:00 PM",
+  "8:00 AM – 2:00 PM",
+  "8:00 AM – 12:00 PM",
+  "7:00 AM – 9:00 PM",
+];
+
+const openingDaysOptions = [
+  "7 Days (Mon–Sun)",
+  "6 Days (Mon–Sat)",
+  "5 Days (Mon–Fri)",
+  "Weekends Only",
+];
+
+const FormGroup: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="flex flex-col">
-    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-      {label}
-    </label>
+    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
     <div className="mt-1">{children}</div>
   </div>
 );
@@ -51,7 +54,7 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
 
 const SparepartProfileFormSection: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<DealershipProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -65,7 +68,7 @@ const SparepartProfileFormSection: React.FC = () => {
   };
 
   useEffect(() => {
-    document.title = "AutoNexus - Your Profile";
+    document.title = "AutoNexus - Dealership Profile";
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
     if (!token) {
@@ -78,9 +81,9 @@ const SparepartProfileFormSection: React.FC = () => {
 
     setAuthToken(token);
 
-    const fetchUserProfile = async () => {
+    const fetchProfile = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/customer/details");
+        const res = await axios.get("http://localhost:5000/api/spareparts/details");
         setProfile(res.data);
         setLoading(false);
       } catch (err: any) {
@@ -91,7 +94,7 @@ const SparepartProfileFormSection: React.FC = () => {
           setAuthToken(null);
           navigate("/signin");
         } else if (err.response?.status === 404) {
-          setError("No customer details found.");
+          setError("No dealership profile found.");
           setLoading(false);
         } else {
           setError("Failed to fetch profile data.");
@@ -100,7 +103,7 @@ const SparepartProfileFormSection: React.FC = () => {
       }
     };
 
-    fetchUserProfile();
+    fetchProfile();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,136 +113,77 @@ const SparepartProfileFormSection: React.FC = () => {
     const formData = new FormData(formRef.current);
 
     const payload = {
-      first_name: formData.get("first_name"),
-      middle_name: formData.get("middle_name"),
-      last_name: formData.get("last_name"),
-      birthday: formData.get("date_of_birth"),
-      gender: formData.get("gender"),
       phone_number: formData.get("phone_number"),
       address: formData.get("address"),
       province: formData.get("province"),
       district: formData.get("district"),
+      company_name: formData.get("company_name"),
+      description: formData.get("description"),
+      founded_year: formData.get("founded_year"),
+      owner_name: formData.get("owner_name"),
+      opening_days: formData.get("opening_days"),
+      opening_hours: formData.get("opening_hours"),
     };
 
     try {
-      const res = await axios.put(
-        "http://localhost:5000/api/customer/update-profile",
-        payload
-      );
+      const res = await axios.put("http://localhost:5000/api/spareparts/update-profile", payload);
       alert(res.data.message);
     } catch (err) {
       console.error("Update failed", err);
-      alert("Something went wrong");
+      alert("Something went wrong while updating the profile");
     }
   };
 
   if (loading) return <p>Loading...</p>;
-  if (error)
-    return (
-      <p className="text-red-500 text-center p-4">
-        {error}
-      </p>
-    );
+  if (error) return <p className="text-red-500 text-center p-4">{error}</p>;
 
   return (
-    <motion.div key="settings" {...animationProps}>
-      <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
+    <motion.div key="dealership-settings" {...animationProps}>
+      <h2 className="text-xl font-semibold mb-6">Dealership Profile Settings</h2>
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-        <SectionHeader title="Personal Information" />
-
+        <SectionHeader title="Dealership Information" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormGroup label="Email">
-            <input
-              type="email"
-              name="email"
-              defaultValue={profile?.email}
-              disabled
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="First Name">
-            <input
-              type="text"
-              name="first_name"
-              defaultValue={profile?.first_name || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Middle Name">
-            <input
-              type="text"
-              name="middle_name"
-              defaultValue={profile?.middle_name || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Last Name">
-            <input
-              type="text"
-              name="last_name"
-              defaultValue={profile?.last_name || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Date of Birth">
-            <input
-              type="date"
-              name="date_of_birth"
-              defaultValue={profile?.birthday ? profile.birthday.split("T")[0] : ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
           <FormGroup label="Phone Number">
-            <input
-              type="text"
-              name="phone_number"
-              defaultValue={profile?.phone_number || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Gender">
-            <select
-              name="gender"
-              defaultValue={profile?.gender || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            >
-              <option value="" disabled>Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
+            <input type="text" name="phone_number" defaultValue={profile?.phone_number || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
           </FormGroup>
           <FormGroup label="Address">
-            <input
-              type="text"
-              name="address"
-              defaultValue={profile?.address || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
+            <input type="text" name="address" defaultValue={profile?.address || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
           </FormGroup>
           <FormGroup label="Province">
-            <input
-              type="text"
-              name="province"
-              defaultValue={profile?.province || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
+            <input type="text" name="province" defaultValue={profile?.province || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
           </FormGroup>
           <FormGroup label="District">
-            <input
-              type="text"
-              name="district"
-              defaultValue={profile?.district || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
+            <input type="text" name="district" defaultValue={profile?.district || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+          </FormGroup>
+          <FormGroup label="Company Name">
+            <input type="text" name="company_name" defaultValue={profile?.company_name || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+          </FormGroup>
+          <FormGroup label="Description">
+            <textarea name="description" defaultValue={profile?.description || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3} />
+          </FormGroup>
+          <FormGroup label="Founded Year">
+            <input type="text" name="founded_year" defaultValue={profile?.founded_year || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+          </FormGroup>
+          <FormGroup label="Owner Name">
+            <input type="text" name="owner_name" defaultValue={profile?.owner_name || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+          </FormGroup>
+          <FormGroup label="Opening Days">
+            <select name="opening_days" defaultValue={profile?.opening_days} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+              {openingDaysOptions.map((day) => (
+                <option key={day} value={day}>{day}</option>
+              ))}
+            </select>
+          </FormGroup>
+          <FormGroup label="Opening Hours">
+            <select name="opening_hours" defaultValue={profile?.opening_hours} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+              {openingHoursOptions.map((hour) => (
+                <option key={hour} value={hour}>{hour}</option>
+              ))}
+            </select>
           </FormGroup>
         </div>
-
         <div className="flex justify-end mt-4">
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
-          >
+          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
             Save Changes
           </button>
         </div>

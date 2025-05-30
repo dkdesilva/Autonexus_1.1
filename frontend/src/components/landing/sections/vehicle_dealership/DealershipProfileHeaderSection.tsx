@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import CustomerProfileImageSection from './DealershipProfileImageSection';
 
 interface UserProfile {
-  first_name: string;
-  customer_created_at: string;
+  company_name: string;
+  dealer_created_at: string;
   listingsCount?: number;
   soldCount?: number;
   favoritesCount?: number;
@@ -31,7 +31,7 @@ const DealershipProfileHeaderSection: React.FC = () => {
         }
 
         // Use your actual API endpoint here
-        const res = await fetch('http://localhost:5000/api/customer/details', {
+        const res = await fetch('http://localhost:5000/api/dealership/details', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -81,10 +81,10 @@ const DealershipProfileHeaderSection: React.FC = () => {
           <div className="mt-4 md:mt-0 flex-1">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold">{user?.first_name}</h1>
+                <h1 className="text-2xl font-bold">{user?.company_name}</h1>
                 <p className="text-gray-600 dark:text-gray-400">
                   Member since{' '}
-                  {new Date(user!.customer_created_at).getFullYear()}
+                  {new Date(user!.dealer_created_at).getFullYear()}
                 </p>
               </div>
               <div className="mt-4 md:mt-0 flex space-x-3">

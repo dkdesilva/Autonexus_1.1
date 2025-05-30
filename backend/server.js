@@ -377,6 +377,235 @@ app.get('/api/customer/profile-image', authenticateJWT, (req, res) => {
 
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
+// ------------------------- Update Garage Profile -------------------------
+app.put('/api/garage/update-profile', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const {
+    phone_number,
+    address,
+    province,
+    district,
+    company_name,
+    service_type,
+    description,
+    founded_year,
+    owner_name,
+    opening_days,
+    opening_hours
+  } = req.body;
+
+  try {
+    // Update common user fields
+    await db.promise().query(
+      `UPDATE users 
+       SET phone_number = ?, address = ?, province = ?, district = ? 
+       WHERE user_id = ? AND is_deleted = 0`,
+      [phone_number, address, province, district, userId]
+    );
+
+    // Update garage-specific fields
+    await db.promise().query(
+      `UPDATE garages 
+       SET company_name = ?, service_type = ?, description = ?, founded_year = ?, 
+           owner_name = ?, opening_days = ?, opening_hours = ?
+       WHERE user_id = ? AND is_deleted = 0`,
+      [company_name, service_type, description, founded_year, owner_name, opening_days, opening_hours, userId]
+    );
+
+    res.json({ message: 'Garage profile updated successfully' });
+  } catch (err) {
+    console.error('Update garage profile error:', err);
+    res.status(500).json({ message: 'Server error updating garage profile' });
+  }
+});
+
+// ------------------------- Get Garage Profile -------------------------
+app.get('/api/garage/details', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+         u.phone_number,
+         u.address,
+         u.province,
+         u.district,
+         g.company_name,
+         g.service_type,
+         g.description,
+         g.founded_year,
+         g.owner_name,
+         g.opening_days,
+         g.opening_hours
+       FROM users u
+       JOIN garages g ON u.user_id = g.user_id
+       WHERE u.user_id = ? AND u.is_deleted = 0 AND g.is_deleted = 0`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Garage profile not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Get garage profile error:', err);
+    res.status(500).json({ message: 'Server error fetching garage profile' });
+  }
+});
+
+// ------------------------- Update Dealership Profile -------------------------
+app.put('/api/dealership/update-profile', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const {
+    phone_number,
+    address,
+    province,
+    district,
+    company_name,
+    description,
+    founded_year,
+    owner_name,
+    opening_days,
+    opening_hours
+  } = req.body;
+
+  try {
+    // Update common user fields
+    await db.promise().query(
+      `UPDATE users 
+       SET phone_number = ?, address = ?, province = ?, district = ? 
+       WHERE user_id = ? AND is_deleted = 0`,
+      [phone_number, address, province, district, userId]
+    );
+
+    // Update dealership-specific fields
+    await db.promise().query(
+      `UPDATE car_dealerships 
+       SET company_name = ?, description = ?, founded_year = ?, 
+           owner_name = ?, opening_days = ?, opening_hours = ?
+       WHERE user_id = ? AND is_deleted = 0`,
+      [company_name, description, founded_year, owner_name, opening_days, opening_hours, userId]
+    );
+
+    res.json({ message: 'Dealership profile updated successfully' });
+  } catch (err) {
+    console.error('Update dealership profile error:', err);
+    res.status(500).json({ message: 'Server error updating dealership profile' });
+  }
+});
+
+// ------------------------- Get Dealership Profile -------------------------
+app.get('/api/dealership/details', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+         u.phone_number,
+         u.address,
+         u.province,
+         u.district,
+         d.company_name,
+         d.description,
+         d.founded_year,
+         d.owner_name,
+         d.opening_days,
+         d.created_at AS dealer_created_at,
+         d.opening_hours
+       FROM users u
+       JOIN car_dealerships d ON u.user_id = d.user_id
+       WHERE u.user_id = ? AND u.is_deleted = 0 AND d.is_deleted = 0`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Dealership profile not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Get dealership profile error:', err);
+    res.status(500).json({ message: 'Server error fetching dealership profile' });
+  }
+});
+
+// ------------------------- Update Spare Parts Profile -------------------------
+app.put('/api/spareparts/update-profile', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const {
+    phone_number,
+    address,
+    province,
+    district,
+    company_name,
+    description,
+    founded_year,
+    owner_name,
+    opening_days,
+    opening_hours
+  } = req.body;
+
+  try {
+    // Update common user fields
+    await db.promise().query(
+      `UPDATE users 
+       SET phone_number = ?, address = ?, province = ?, district = ? 
+       WHERE user_id = ? AND is_deleted = 0`,
+      [phone_number, address, province, district, userId]
+    );
+
+    // Update spare parts specific fields
+    await db.promise().query(
+      `UPDATE spareparts 
+       SET company_name = ?, description = ?, founded_year = ?, 
+           owner_name = ?, opening_days = ?, opening_hours = ?
+       WHERE user_id = ? AND is_deleted = 0`,
+      [company_name, description, founded_year, owner_name, opening_days, opening_hours, userId]
+    );
+
+    res.json({ message: 'Spare parts profile updated successfully' });
+  } catch (err) {
+    console.error('Update spare parts profile error:', err);
+    res.status(500).json({ message: 'Server error updating spare parts profile' });
+  }
+});
+
+// ------------------------- Get Spare Parts Profile -------------------------
+app.get('/api/spareparts/details', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+         u.phone_number,
+         u.address,
+         u.province,
+         u.district,
+         s.company_name,
+         s.description,
+         s.founded_year,
+         s.owner_name,
+         s.opening_days,
+         s.created_at AS spareparts_created_at,
+         s.opening_hours
+       FROM users u
+       JOIN spareparts s ON u.user_id = s.user_id
+       WHERE u.user_id = ? AND u.is_deleted = 0 AND s.is_deleted = 0`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Spare parts profile not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Get spare parts profile error:', err);
+    res.status(500).json({ message: 'Server error fetching spare parts profile' });
+  }
+});
+
 
 // Start Server
 app.listen(5000, () => {
