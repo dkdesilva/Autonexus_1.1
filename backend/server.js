@@ -436,6 +436,7 @@ app.get('/api/garage/details', authenticateJWT, async (req, res) => {
          g.founded_year,
          g.owner_name,
          g.opening_days,
+         g.created_at AS garage_created_at,
          g.opening_hours
        FROM users u
        JOIN garages g ON u.user_id = g.user_id

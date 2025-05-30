@@ -5,7 +5,7 @@ import CustomerProfileImageSection from './SparepartProfileImageSection';
 
 interface UserProfile {
   company_name: string;
-  customer_created_at: string;
+  spareparts_created_at: string;
   listingsCount?: number;
   soldCount?: number;
   favoritesCount?: number;
@@ -84,7 +84,7 @@ const SparepartProfileHeaderSection: React.FC = () => {
                 <h1 className="text-2xl font-bold">{user?.company_name}</h1>
                 <p className="text-gray-600 dark:text-gray-400">
                   Member since{' '}
-                  {new Date(user!.customer_created_at).getFullYear()}
+                  {new Date(user!.spareparts_created_at).getFullYear()}
                 </p>
               </div>
               <div className="mt-4 md:mt-0 flex space-x-3">
