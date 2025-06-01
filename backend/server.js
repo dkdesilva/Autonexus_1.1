@@ -211,7 +211,7 @@ const registerHandler = (userType, tableName) => async (req, res) => {
 
 app.post('/api/cardealershipregister', registerHandler('dealership', 'car_dealerships'));
 app.post('/api/garageregister', registerHandler('garage', 'garages'));
-app.post('/api/sparepartregister', registerHandler('sparepart', 'spareparts'));
+app.post('/api/sparepartregister', registerHandler('sparepart', 'spareparts_shop'));
 
 // ------------------------- Single Login -------------------------
 
@@ -558,7 +558,7 @@ app.put('/api/spareparts/update-profile', authenticateJWT, async (req, res) => {
 
     // Update spare parts specific fields
     await db.promise().query(
-      `UPDATE spareparts 
+      `UPDATE spareparts_shop 
        SET company_name = ?, description = ?, founded_year = ?, 
            owner_name = ?, opening_days = ?, opening_hours = ?
        WHERE user_id = ? AND is_deleted = 0`,
@@ -591,7 +591,7 @@ app.get('/api/spareparts/details', authenticateJWT, async (req, res) => {
          s.created_at AS spareparts_created_at,
          s.opening_hours
        FROM users u
-       JOIN spareparts s ON u.user_id = s.user_id
+       JOIN spareparts_shop s ON u.user_id = s.user_id
        WHERE u.user_id = ? AND u.is_deleted = 0 AND s.is_deleted = 0`,
       [userId]
     );
@@ -605,6 +605,160 @@ app.get('/api/spareparts/details', authenticateJWT, async (req, res) => {
     console.error('Get spare parts profile error:', err);
     res.status(500).json({ message: 'Server error fetching spare parts profile' });
   }
+});
+
+// ------------------------- Add Vehicle Adverti -------------------------
+app.post('/api/vehicle/add', authenticateJWT, upload.fields([{ name: 'images', maxCount: 4 }]), async (req, res) => {
+  const {
+    title,
+    description,
+    price,
+    province,
+    city,
+    phone_number,
+    selling_status,
+    item_type,
+    item_condition,
+    brand,
+    color,
+    made_year,
+    mileage,
+    fuel_type,
+    transmission
+  } = req.body;
+
+  const user_id = req.user.id;
+  const images = req.files?.images || [];
+
+  if (!title || !price || !item_type || images.length === 0) {
+    return res.status(400).json({ message: 'Missing required fields or images' });
+  }
+
+  // Ensure exactly 4 image slots
+  const imagePaths = Array(4).fill('').map((_, i) => images[i]?.filename || '');
+
+  // Start MySQL transaction
+  db.beginTransaction(err => {
+    if (err) return res.status(500).json({ message: 'Transaction start error', error: err.message });
+
+    // 1. Insert into advertisements
+    const adQuery = `
+      INSERT INTO advertisements (user_id, title, description, price, province, city, phone_number, selling_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.query(adQuery, [user_id, title, description, price, province, city, phone_number, selling_status], (err1, adResult) => {
+      if (err1) return db.rollback(() => res.status(500).json({ message: 'Ad insert failed', error: err1.message }));
+
+      const ad_id = adResult.insertId;
+
+      // 2. Insert into items (with ad_id now)
+      const itemQuery = `
+        INSERT INTO items (user_id, ad_id, item_type, item_condition)
+        VALUES (?, ?, ?, ?)`;
+      db.query(itemQuery, [user_id, ad_id, item_type, item_condition], (err2, itemResult) => {
+        if (err2) return db.rollback(() => res.status(500).json({ message: 'Item insert failed', error: err2.message }));
+
+        const item_id = itemResult.insertId;
+
+        // 3. Insert into item_images
+        const imageQuery = `
+          INSERT INTO item_images (item_id, image_url1, image_url2, image_url3, image_url4)
+          VALUES (?, ?, ?, ?, ?)`;
+        db.query(imageQuery, [item_id, ...imagePaths], (err3) => {
+          if (err3) return db.rollback(() => res.status(500).json({ message: 'Image insert failed', error: err3.message }));
+
+          // 4. Insert into vehicles
+          const vehicleQuery = `
+            INSERT INTO vehicles (item_id, brand, color, made_year, mileage, fuel_type, transmission)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+          db.query(vehicleQuery, [item_id, brand, color, made_year, mileage, fuel_type, transmission], (err4) => {
+            if (err4) return db.rollback(() => res.status(500).json({ message: 'Vehicle insert failed', error: err4.message }));
+
+            db.commit(err5 => {
+              if (err5) return db.rollback(() => res.status(500).json({ message: 'Transaction commit failed', error: err5.message }));
+              res.status(201).json({ message: 'Vehicle advertisement successfully created' });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+// ------------------------- Add Vehicle Adverti -------------------------
+
+app.post('/api/sparepart/add', authenticateJWT, upload.fields([{ name: 'images', maxCount: 4 }]), async (req, res) => {
+  const {
+    title,
+    description,
+    price,
+    province,
+    city,
+    phone_number,
+    selling_status,
+    item_type,
+    item_condition,
+    brand,
+    color,
+    material,
+    model_compatibility,
+    made_year,
+    quantity
+  } = req.body;
+
+  const user_id = req.user.id;
+  const images = req.files?.images || [];
+
+  if (!title || !price || !item_type || images.length === 0) {
+    return res.status(400).json({ message: 'Missing required fields or images' });
+  }
+
+  // Ensure exactly 4 image slots
+  const imagePaths = Array(4).fill('').map((_, i) => images[i]?.filename || '');
+
+  db.beginTransaction(err => {
+    if (err) return res.status(500).json({ message: 'Transaction start error', error: err.message });
+
+    // 1. Insert into advertisements
+    const adQuery = `
+      INSERT INTO advertisements (user_id, title, description, price, province, city, phone_number, selling_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.query(adQuery, [user_id, title, description, price, province, city, phone_number, selling_status], (err1, adResult) => {
+      if (err1) return db.rollback(() => res.status(500).json({ message: 'Ad insert failed', error: err1.message }));
+
+      const ad_id = adResult.insertId;
+
+      // 2. Insert into items
+      const itemQuery = `
+        INSERT INTO items (user_id, ad_id, item_type, item_condition)
+        VALUES (?, ?, ?, ?)`;
+      db.query(itemQuery, [user_id, ad_id, item_type, item_condition], (err2, itemResult) => {
+        if (err2) return db.rollback(() => res.status(500).json({ message: 'Item insert failed', error: err2.message }));
+
+        const item_id = itemResult.insertId;
+
+        // 3. Insert into item_images
+        const imageQuery = `
+          INSERT INTO item_images (item_id, image_url1, image_url2, image_url3, image_url4)
+          VALUES (?, ?, ?, ?, ?)`;
+        db.query(imageQuery, [item_id, ...imagePaths], (err3) => {
+          if (err3) return db.rollback(() => res.status(500).json({ message: 'Image insert failed', error: err3.message }));
+
+          // 4. Insert into spareparts
+          const spareQuery = `
+            INSERT INTO spareparts (item_id, brand, color, material, model_compatibility, made_year, quantity)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+          db.query(spareQuery, [item_id, brand, color, material, model_compatibility, made_year, quantity || 1], (err4) => {
+            if (err4) return db.rollback(() => res.status(500).json({ message: 'Spare part insert failed', error: err4.message }));
+
+            db.commit(err5 => {
+              if (err5) return db.rollback(() => res.status(500).json({ message: 'Transaction commit failed', error: err5.message }));
+              res.status(201).json({ message: 'Spare part advertisement successfully created' });
+            });
+          });
+        });
+      });
+    });
+  });
 });
 
 

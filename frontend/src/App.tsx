@@ -26,6 +26,8 @@ import GarageProfileForm from './forms/grage/GarageProfileForm';
 import GarageProfileFormSection from './components/landing/sections/garage/GarageProfileFormSection';
 import GrageProfile from './pages/main/garage/GrageProfile';
 import VehicleDealershipProfile from './pages/main/vehicle_dealership/VehicleDealershipProfile';
+import VehicleAddMultiStepForm from './forms/create_vehicleadd_form/VehicleAddMultiStepForm';
+import SparePartsAddMultiStepForm from './forms/create_sparepartsadd_form/SparePartsAddMultiStepForm';
 
 function App() {
   return (
@@ -62,6 +64,8 @@ function App() {
 
           <Route path="/cusform" element={<CustomerProfileForm />} />
           <Route path="/garageform" element={<GarageProfileForm />} />
+          <Route path="/create-vehicle-add" element={<VehicleAddMultiStepForm />} />
+          <Route path="/create-sparepart-add" element={<SparePartsAddMultiStepForm />} />
         </Routes>
       </Router>
     </ThemeProvider>

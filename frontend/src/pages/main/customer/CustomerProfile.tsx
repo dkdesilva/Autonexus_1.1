@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Car,
   Heart,
@@ -157,9 +158,12 @@ const CustomerProfile: React.FC = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                       You don't have any active listings. Start selling your vehicle today!
                     </p>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
-                      Create First Listing
-                    </button>
+                    <Link
+                        to="/create-vehicle-add">
+                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+                                Create First Listing
+                            </button>
+                    </Link>
                   </div>
                 </motion.div>
               )}
