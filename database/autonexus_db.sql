@@ -181,4 +181,4 @@ select * from advertisements;
 select * from items;
 select * from item_images;
 select * from vehicles;
-select * from vehicles;
+select * from spareparts;

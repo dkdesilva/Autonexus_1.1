@@ -684,6 +684,63 @@ app.post('/api/vehicle/add', authenticateJWT, upload.fields([{ name: 'images', m
   });
 });
 
+
+// ------------------------- Get All Vehicle Adverti -------------------------
+app.get('/api/vehicle/all', async (req, res) => {
+  const query = `
+    SELECT 
+      a.ad_id,
+      a.user_id,
+      a.title,
+      a.description,
+      a.price,
+      a.province,
+      a.city,
+      a.phone_number,
+      a.selling_status,
+      i.item_id,
+      i.item_type,
+      i.item_condition,
+      ii.image_url1,
+      ii.image_url2,
+      ii.image_url3,
+      ii.image_url4,
+      v.brand,
+      v.color,
+      v.made_year,
+      v.mileage,
+      v.fuel_type,
+      v.transmission
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    JOIN item_images ii ON i.item_id = ii.item_id
+    JOIN vehicles v ON i.item_id = v.item_id
+    WHERE a.is_deleted = 0 AND i.is_deleted = 0 AND ii.is_deleted = 0 AND v.is_deleted = 0
+    ORDER BY a.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching vehicle ads', error: err.message });
+    }
+
+    // Update image URLs to include full path
+    const formatted = results.map(ad => ({
+      ...ad,
+      images: [
+        ad.image_url1 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url1}` : null,
+        ad.image_url2 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url2}` : null,
+        ad.image_url3 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url3}` : null,
+        ad.image_url4 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url4}` : null,
+      ].filter(Boolean)
+    }));
+
+    res.json(formatted);
+  });
+});
+
+
+
 // ------------------------- Add Vehicle Adverti -------------------------
 
 app.post('/api/sparepart/add', authenticateJWT, upload.fields([{ name: 'images', maxCount: 4 }]), async (req, res) => {
