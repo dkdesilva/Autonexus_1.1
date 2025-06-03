@@ -38,12 +38,8 @@ export const validateStep = (step: number, formData: FormData): FormErrors => {
       break;
 
     case 4:
-      if (!formData.item_type.trim()) {
-        errors.item_type = 'Item type is required';
-      }
-      if (!formData.item_condition.trim()) {
-        errors.item_condition = 'Item condition is required';
-      }
+
+  
       if (!formData.brand.trim()) {
         errors.brand = 'Brand is required';
       }

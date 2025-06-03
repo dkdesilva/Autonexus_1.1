@@ -739,9 +739,87 @@ app.get('/api/vehicle/all', async (req, res) => {
   });
 });
 
+app.get('/api/vehicle/:id', (req, res) => {
+  const { id } = req.params;
+
+  const query = `
+    SELECT 
+      a.ad_id,
+      a.user_id,
+      a.title,
+      a.description,
+      a.price,
+      a.province,
+      a.city,
+      a.phone_number,
+      a.selling_status,
+      i.item_id,
+      i.item_type,
+      i.item_condition,
+      ii.image_url1,
+      ii.image_url2,
+      ii.image_url3,
+      ii.image_url4,
+      v.brand,
+      v.color,
+      v.made_year,
+      v.mileage,
+      v.fuel_type,
+      v.transmission
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    JOIN item_images ii ON i.item_id = ii.item_id
+    JOIN vehicles v ON i.item_id = v.item_id
+    WHERE a.ad_id = ? AND a.is_deleted = 0 AND i.is_deleted = 0 AND ii.is_deleted = 0 AND v.is_deleted = 0
+    LIMIT 1
+  `;
+
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching vehicle data', error: err.message });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Vehicle not found' });
+    }
+
+    const ad = results[0];
+
+    const formatted = {
+      ad_id: ad.ad_id,
+      user_id: ad.user_id,
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      province: ad.province,
+      city: ad.city,
+      phone_number: ad.phone_number,
+      selling_status: ad.selling_status,
+      item_id: ad.item_id,
+      item_type: ad.item_type,
+      item_condition: ad.item_condition,
+      images: [
+        ad.image_url1 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url1}` : null,
+        ad.image_url2 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url2}` : null,
+        ad.image_url3 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url3}` : null,
+        ad.image_url4 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url4}` : null,
+      ].filter(Boolean),
+      vehicle_details: {
+        brand: ad.brand,
+        color: ad.color,
+        made_year: ad.made_year,
+        mileage: ad.mileage,
+        fuel_type: ad.fuel_type,
+        transmission: ad.transmission,
+      }
+    };
+
+    res.json(formatted);
+  });
+});
 
 
-// ------------------------- Add Vehicle Adverti -------------------------
+// ------------------------- Add Sparepart Adverti -------------------------
 
 app.post('/api/sparepart/add', authenticateJWT, upload.fields([{ name: 'images', maxCount: 4 }]), async (req, res) => {
   const {
@@ -815,6 +893,140 @@ app.post('/api/sparepart/add', authenticateJWT, upload.fields([{ name: 'images',
         });
       });
     });
+  });
+});
+
+// ------------------------- Get All Sparepart Adverti -------------------------
+app.get('/api/sparepart/all', async (req, res) => {
+  const query = `
+    SELECT 
+      a.ad_id,
+      a.user_id,
+      a.title,
+      a.description,
+      a.price,
+      a.province,
+      a.city,
+      a.phone_number,
+      a.selling_status,
+      i.item_id,
+      i.item_type,
+      i.item_condition,
+      ii.image_url1,
+      ii.image_url2,
+      ii.image_url3,
+      ii.image_url4,
+      s.brand,
+      s.color,
+      s.material,
+      s.model_compatibility,
+      s.made_year,
+      s.quantity
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    JOIN item_images ii ON i.item_id = ii.item_id
+    JOIN spareparts s ON i.item_id = s.item_id
+    WHERE a.is_deleted = 0 AND i.is_deleted = 0 AND ii.is_deleted = 0 AND s.is_deleted = 0
+    ORDER BY a.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching spare part ads', error: err.message });
+    }
+
+    // Format image URLs
+    const formatted = results.map(ad => ({
+      ...ad,
+      images: [
+        ad.image_url1 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url1}` : null,
+        ad.image_url2 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url2}` : null,
+        ad.image_url3 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url3}` : null,
+        ad.image_url4 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url4}` : null,
+      ].filter(Boolean)
+    }));
+
+    res.json(formatted);
+  });
+});
+
+// ------------------------- Get All Sparepart Adverti By Id-------------------------
+app.get('/api/sparepart/:id', (req, res) => {
+  const { id } = req.params;
+
+  const query = `
+    SELECT 
+      a.ad_id,
+      a.user_id,
+      a.title,
+      a.description,
+      a.price,
+      a.province,
+      a.city,
+      a.phone_number,
+      a.selling_status,
+      i.item_id,
+      i.item_type,
+      i.item_condition,
+      ii.image_url1,
+      ii.image_url2,
+      ii.image_url3,
+      ii.image_url4,
+      s.brand,
+      s.color,
+      s.material,
+      s.model_compatibility,
+      s.made_year,
+      s.quantity
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    JOIN item_images ii ON i.item_id = ii.item_id
+    JOIN spareparts s ON i.item_id = s.item_id
+    WHERE a.ad_id = ? AND a.is_deleted = 0 AND i.is_deleted = 0 AND ii.is_deleted = 0 AND s.is_deleted = 0
+    LIMIT 1
+  `;
+
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching spare part data', error: err.message });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Spare part not found' });
+    }
+
+    const ad = results[0];
+
+    const formatted = {
+      ad_id: ad.ad_id,
+      user_id: ad.user_id,
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      province: ad.province,
+      city: ad.city,
+      phone_number: ad.phone_number,
+      selling_status: ad.selling_status,
+      item_id: ad.item_id,
+      item_type: ad.item_type,
+      item_condition: ad.item_condition,
+      images: [
+        ad.image_url1 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url1}` : null,
+        ad.image_url2 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url2}` : null,
+        ad.image_url3 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url3}` : null,
+        ad.image_url4 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url4}` : null,
+      ].filter(Boolean),
+      spare_details: {
+        brand: ad.brand,
+        color: ad.color,
+        material: ad.material,
+        model_compatibility: ad.model_compatibility,
+        made_year: ad.made_year,
+        quantity: ad.quantity
+      }
+    };
+
+    res.json(formatted);
   });
 });
 

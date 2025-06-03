@@ -30,7 +30,6 @@ const Navbar: React.FC = () => {
     { name: 'Spare Parts', path: '/spare-parts', icon: <Cog className="w-5 h-5" /> },
     { name: 'Garages', path: '/garages', icon: <Wrench className="w-5 h-5" /> },
     { name: 'Dealerships', path: '/dealerships', icon: <Building className="w-5 h-5" /> },
-    { name: 'Contact Us', path: '/contact', icon: <MessageSquare className="w-5 h-5" /> },
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);

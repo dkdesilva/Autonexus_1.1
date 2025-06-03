@@ -28,6 +28,7 @@ import GrageProfile from './pages/main/garage/GrageProfile';
 import VehicleDealershipProfile from './pages/main/vehicle_dealership/VehicleDealershipProfile';
 import VehicleAddMultiStepForm from './forms/create_vehicleadd_form/VehicleAddMultiStepForm';
 import SparePartsAddMultiStepForm from './forms/create_sparepartsadd_form/SparePartsAddMultiStepForm';
+import SparePartsDetailedView from './pages/main/SparePartsDetailedView';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/home" element={<Home />} />
           <Route path="/details/:id" element={<DetailedView />} />
+          <Route path="/sparedetails/:id" element={<SparePartsDetailedView />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/spare-parts" element={<SpareParts />} />
           <Route path="/garages" element={<Garages />} />
