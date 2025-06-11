@@ -4,6 +4,7 @@ import { StepProps } from '../create_vehicleadd_form/types';
 const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErrors }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
     setFormData({
       ...formData,
       [name]: value,
@@ -16,6 +17,21 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
       });
     }
   };
+
+  const inputClass = (error?: string) =>
+    `w-full px-4 py-2 rounded-lg border placeholder-gray-400
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+    bg-white dark:bg-gray-700
+    ${error ? 'border-red-500 text-red-700 dark:text-red-400' : 'border-gray-300 text-gray-900 dark:text-white'}
+    transition-colors`;
+
+  const selectClass = (error?: string) =>
+    `w-full px-4 py-2 rounded-lg border
+    bg-white dark:bg-gray-700
+    text-gray-900 dark:text-white
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+    ${error ? 'border-red-500 text-red-700 dark:text-red-400' : 'border-gray-300'}
+    transition-colors`;
 
   return (
     <div className="space-y-6 transition-all duration-300 ease-in-out text-gray-800 dark:text-gray-200">
@@ -35,16 +51,7 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
             value={formData.brand}
             onChange={handleChange}
             placeholder="e.g. Toyota"
-            className={`w-full px-4 py-2 rounded-lg border placeholder-gray-400
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              bg-white dark:bg-gray-700
-              ${
-                errors.brand
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'border-gray-300 text-gray-900 dark:text-white'
-              }
-              transition-colors
-            `}
+            className={inputClass(errors.brand)}
           />
           {errors.brand && <p className="text-sm text-red-500 mt-1">{errors.brand}</p>}
         </div>
@@ -61,16 +68,7 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
             value={formData.color}
             onChange={handleChange}
             placeholder="e.g. Red"
-            className={`w-full px-4 py-2 rounded-lg border placeholder-gray-400
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              bg-white dark:bg-gray-700
-              ${
-                errors.color
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'border-gray-300 text-gray-900 dark:text-white'
-              }
-              transition-colors
-            `}
+            className={inputClass(errors.color)}
           />
           {errors.color && <p className="text-sm text-red-500 mt-1">{errors.color}</p>}
         </div>
@@ -87,16 +85,7 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
             value={formData.made_year}
             onChange={handleChange}
             placeholder="e.g. 2020"
-            className={`w-full px-4 py-2 rounded-lg border placeholder-gray-400
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              bg-white dark:bg-gray-700
-              ${
-                errors.made_year
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'border-gray-300 text-gray-900 dark:text-white'
-              }
-              transition-colors
-            `}
+            className={inputClass(errors.made_year)}
           />
           {errors.made_year && <p className="text-sm text-red-500 mt-1">{errors.made_year}</p>}
         </div>
@@ -113,16 +102,7 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
             value={formData.mileage}
             onChange={handleChange}
             placeholder="e.g. 45000"
-            className={`w-full px-4 py-2 rounded-lg border placeholder-gray-400
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              bg-white dark:bg-gray-700
-              ${
-                errors.mileage
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'border-gray-300 text-gray-900 dark:text-white'
-              }
-              transition-colors
-            `}
+            className={inputClass(errors.mileage)}
           />
           {errors.mileage && <p className="text-sm text-red-500 mt-1">{errors.mileage}</p>}
         </div>
@@ -132,20 +112,12 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
           <label htmlFor="fuel_type" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
             Fuel Type
           </label>
-    <select
+          <select
             id="fuel_type"
             name="fuel_type"
             value={formData.fuel_type}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border
-              bg-white dark:bg-gray-700
-              text-gray-900 dark:text-white
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.fuel_type ? 'border-red-500 text-red-700 dark:text-red-400' : 'border-gray-300'
-              }
-              transition-colors
-            `}
+            className={selectClass(errors.fuel_type)}
           >
             <option value="" disabled>
               Select Fuel Type
@@ -163,20 +135,12 @@ const FormStep4: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
           <label htmlFor="transmission" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
             Transmission
           </label>
-<select
+          <select
             id="transmission"
             name="transmission"
             value={formData.transmission}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border
-              bg-white dark:bg-gray-700
-              text-gray-900 dark:text-white
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.transmission ? 'border-red-500 text-red-700 dark:text-red-400' : 'border-gray-300'
-              }
-              transition-colors
-            `}
+            className={selectClass(errors.transmission)}
           >
             <option value="" disabled>
               Select Transmission

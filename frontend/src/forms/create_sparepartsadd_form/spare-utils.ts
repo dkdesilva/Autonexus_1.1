@@ -1,5 +1,6 @@
 import { FormData, FormErrors } from '../create_sparepartsadd_form/spare-types';
 
+// Validates fields for a specific step
 export const validateStep = (step: number, formData: FormData): FormErrors => {
   const errors: FormErrors = {};
 
@@ -34,12 +35,10 @@ export const validateStep = (step: number, formData: FormData): FormErrors => {
       break;
 
     case 3:
-      // No validation for images unless needed later
+      // Currently no validation for images
       break;
 
     case 4:
-
-  
       if (!formData.brand.trim()) {
         errors.brand = 'Brand is required';
       }
@@ -59,11 +58,15 @@ export const validateStep = (step: number, formData: FormData): FormErrors => {
         errors.material = 'Material is required';
       }
       break;
+
+    default:
+      break;
   }
 
   return errors;
 };
 
+// Checks if a step has no validation errors
 export const isStepValid = (errors: FormErrors): boolean => {
   return Object.keys(errors).length === 0;
 };

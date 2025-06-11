@@ -9,6 +9,8 @@ import FormStep4 from './FormStep4';
 import { validateStep, isStepValid } from '../create_vehicleadd_form/utils';
 
 const VehicleAddMultiStepForm: React.FC = () => {
+  const totalSteps = 4;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -18,7 +20,7 @@ const VehicleAddMultiStepForm: React.FC = () => {
     city: '',
     phone_number: '',
     selling_status: '',
-    images: [], // Array of File
+    images: [], // File[]
     item_type: '',
     item_condition: '',
     brand: '',
@@ -32,72 +34,70 @@ const VehicleAddMultiStepForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
-  const totalSteps = 4;
-
   const goToNextStep = () => {
     const stepErrors = validateStep(currentStep, formData);
     setErrors(stepErrors);
-    if (isStepValid(stepErrors)) {
-      if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1);
-      }
+
+    if (isStepValid(stepErrors) && currentStep < totalSteps) {
+      setErrors({}); // Clear errors on successful validation
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0); // Optional UX improvement
     }
   };
 
   const goToPreviousStep = () => {
     if (currentStep > 1) {
+      setErrors({}); // Clear errors on going back
       setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
     }
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const stepErrors = validateStep(currentStep, formData);
-  setErrors(stepErrors);
-  if (!isStepValid(stepErrors)) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  try {
-    setIsSubmitting(true);
-
-    const form = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'images') {
-        (value as File[]).forEach((file) => {
-          form.append('images', file);
-        });
-      } else {
-        form.append(key, value);
-      }
-    });
+    const stepErrors = validateStep(currentStep, formData);
+    setErrors(stepErrors);
+    if (!isStepValid(stepErrors)) return;
 
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
     if (!token) {
       alert('No token found. Please log in again.');
       return;
     }
 
-    const response = await axios.post(
-      'http://localhost:5000/api/vehicle/add',
-      form,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    try {
+      setIsSubmitting(true);
 
-    console.log('Response:', response.data);
-    setIsComplete(true);
-  } catch (error) {
-    console.error('Error submitting form:', error);
-    alert('Failed to submit vehicle listing.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      const form = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'images') {
+          (value as File[]).forEach(file => form.append('images', file));
+        } else {
+          form.append(key, value);
+        }
+      });
 
+      const response = await axios.post(
+        'http://localhost:5000/api/vehicle/add',
+        form,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log('Response:', response.data);
+      setIsComplete(true);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to submit vehicle listing.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const renderFormStep = () => {
     const stepProps = { formData, setFormData, errors, setErrors };
@@ -116,7 +116,10 @@ const handleSubmit = async (e: React.FormEvent) => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
           <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Listing Submitted!</h2>
           <p className="mb-4 text-gray-600 dark:text-gray-300">Your vehicle listing has been added.</p>
-          <button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
             Add Another
           </button>
         </div>
@@ -132,16 +135,30 @@ const handleSubmit = async (e: React.FormEvent) => {
           {renderFormStep()}
           <div className="flex justify-between mt-6">
             {currentStep > 1 && (
-              <button type="button" onClick={goToPreviousStep} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+              <button
+                type="button"
+                onClick={goToPreviousStep}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                disabled={isSubmitting}
+              >
                 Previous
               </button>
             )}
             {currentStep < totalSteps ? (
-              <button type="button" onClick={goToNextStep} className="ml-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              <button
+                type="button"
+                onClick={goToNextStep}
+                className="ml-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                disabled={isSubmitting}
+              >
                 Next
               </button>
             ) : (
-              <button type="submit" className="ml-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700" disabled={isSubmitting}>
+              <button
+                type="submit"
+                className="ml-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
             )}

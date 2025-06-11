@@ -2,20 +2,34 @@ import React from 'react';
 import { StepProps } from '../create_sparepartsadd_form/spare-types';
 
 const FormStep1: React.FC<StepProps> = ({ formData, setFormData, errors, setErrors }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+
+    setFormData({ ...formData, [name]: value });
 
     if (errors[name as keyof typeof errors]) {
-      setErrors({
-        ...errors,
-        [name]: undefined
-      });
+      setErrors({ ...errors, [name]: undefined });
     }
   };
+
+  const baseInputClasses = `w-full px-4 py-3 rounded-lg border placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`;
+  const getInputClasses = (field: keyof typeof errors) =>
+    `${baseInputClasses} ${
+      errors[field]
+        ? 'border-red-500 text-red-700 dark:text-red-400'
+        : 'border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white'
+    } bg-white dark:bg-gray-700`;
+
+  const Label = ({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) => (
+    <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+      {children}
+    </label>
+  );
+
+  const ErrorText = ({ field }: { field: keyof typeof errors }) =>
+    errors[field] ? <p className="mt-1 text-sm text-red-500">{errors[field]}</p> : null;
 
   return (
     <div className="space-y-6 transition-all duration-300 ease-in-out text-gray-800 dark:text-gray-200">
@@ -25,190 +39,105 @@ const FormStep1: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
       <div className="space-y-4">
         {/* Title */}
         <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            Title <span className="text-red-500">*</span>
-          </label>
+          <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
           <input
             type="text"
             id="title"
             name="title"
             value={formData.title || ''}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.title
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'text-gray-900 dark:text-white'
-              }
-              bg-white dark:bg-gray-700
-              transition-colors
-            `}
+            className={getInputClasses('title')}
             placeholder="Enter the item title"
           />
-          {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
+          <ErrorText field="title" />
         </div>
 
         {/* Description */}
         <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            Description
-          </label>
+          <Label htmlFor="description">Description</Label>
           <textarea
             id="description"
             name="description"
             value={formData.description || ''}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.description
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'text-gray-900 dark:text-white'
-              }
-              bg-white dark:bg-gray-700
-              transition-colors
-            `}
+            className={getInputClasses('description')}
             placeholder="Enter a description"
             rows={4}
           />
-          {errors.description && <p className="mt-1 text-sm text-red-500">{errors.description}</p>}
+          <ErrorText field="description" />
         </div>
 
         {/* Price */}
         <div>
-          <label
-            htmlFor="price"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            Price (LKR) <span className="text-red-500">*</span>
-          </label>
+          <Label htmlFor="price">Price (LKR) <span className="text-red-500">*</span></Label>
           <input
             type="number"
-            step="0.01"
-            min="0"
             id="price"
             name="price"
             value={formData.price || ''}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.price
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'text-gray-900 dark:text-white'
-              }
-              bg-white dark:bg-gray-700
-              transition-colors
-            `}
+            className={getInputClasses('price')}
             placeholder="Enter the price"
+            min="0"
+            step="0.01"
           />
-          {errors.price && <p className="mt-1 text-sm text-red-500">{errors.price}</p>}
+          <ErrorText field="price" />
         </div>
 
         {/* Province */}
         <div>
-          <label
-            htmlFor="province"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            Province
-          </label>
+          <Label htmlFor="province">Province</Label>
           <input
             type="text"
             id="province"
             name="province"
             value={formData.province || ''}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.province
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'text-gray-900 dark:text-white'
-              }
-              bg-white dark:bg-gray-700
-              transition-colors
-            `}
+            className={getInputClasses('province')}
             placeholder="Enter province"
           />
-          {errors.province && <p className="mt-1 text-sm text-red-500">{errors.province}</p>}
+          <ErrorText field="province" />
         </div>
 
         {/* City */}
         <div>
-          <label
-            htmlFor="city"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            City
-          </label>
+          <Label htmlFor="city">City</Label>
           <input
             type="text"
             id="city"
             name="city"
             value={formData.city || ''}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.city
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'text-gray-900 dark:text-white'
-              }
-              bg-white dark:bg-gray-700
-              transition-colors
-            `}
+            className={getInputClasses('city')}
             placeholder="Enter city"
           />
-          {errors.city && <p className="mt-1 text-sm text-red-500">{errors.city}</p>}
+          <ErrorText field="city" />
         </div>
 
         {/* Phone Number */}
         <div>
-          <label
-            htmlFor="phone_number"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            Phone Number
-          </label>
+          <Label htmlFor="phone_number">Phone Number</Label>
           <input
             type="tel"
             id="phone_number"
             name="phone_number"
             value={formData.phone_number || ''}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              ${
-                errors.phone_number
-                  ? 'border-red-500 text-red-700 dark:text-red-400'
-                  : 'text-gray-900 dark:text-white'
-              }
-              bg-white dark:bg-gray-700
-              transition-colors
-            `}
+            className={getInputClasses('phone_number')}
             placeholder="Enter phone number"
           />
-          {errors.phone_number && <p className="mt-1 text-sm text-red-500">{errors.phone_number}</p>}
+          <ErrorText field="phone_number" />
         </div>
 
         {/* Selling Status */}
         <div>
-          <label
-            htmlFor="selling_status"
-            className="block text-sm font-medium text-gray-700 dark:text-white mb-1"
-          >
-            Selling Status
-          </label>
+          <Label htmlFor="selling_status">Selling Status</Label>
           <select
             id="selling_status"
             name="selling_status"
             value={formData.selling_status || 'available'}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
-              text-gray-900 dark:text-white bg-white dark:bg-gray-700
-            `}
+            className={`${baseInputClasses} border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white bg-white dark:bg-gray-700`}
           >
             <option value="available">Available</option>
             <option value="sold">Sold</option>

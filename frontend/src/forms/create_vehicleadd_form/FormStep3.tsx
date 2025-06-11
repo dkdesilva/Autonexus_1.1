@@ -3,51 +3,32 @@ import { StepProps } from '../create_vehicleadd_form/types';
 import { ImagePlus } from 'lucide-react';
 
 const FormStep3: React.FC<StepProps> = ({ formData, setFormData, errors, setErrors }) => {
-  const fileInputRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ];
+  const fileInputRefs = Array.from({ length: 4 }, () => useRef<HTMLInputElement>(null));
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      // Validate file is an image
-      if (!file.type.startsWith('image/')) {
-        setErrors({
-          ...errors,
-          images: 'Please upload only image files'
-        });
-        return;
-      }
+    // Validate that file is an image
+    if (!file.type.startsWith('image/')) {
+      setErrors({ ...errors, images: 'Please upload only image files' });
+      return;
+    }
 
-      // Update image at specific index
-      const newImages = [...formData.images];
-      newImages[index] = file;
-      setFormData({
-        ...formData,
-        images: newImages
-      });
+    const newImages = [...formData.images];
+    newImages[index] = file;
+    setFormData({ ...formData, images: newImages });
 
-      // Clear error if it was set
-      if (errors.images) {
-        setErrors({
-          ...errors,
-          images: undefined
-        });
-      }
+    // Clear image error if any
+    if (errors.images) {
+      setErrors({ ...errors, images: undefined });
     }
   };
 
   const removeImage = (index: number) => {
     const newImages = [...formData.images];
     newImages[index] = undefined as any;
-    setFormData({
-      ...formData,
-      images: newImages
-    });
+    setFormData({ ...formData, images: newImages });
   };
 
   return (
@@ -66,9 +47,9 @@ const FormStep3: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
               className="hidden"
             />
 
-            <div className="aspect-square w-full rounded-lg overflow-hidden relative
-              bg-gray-100 dark:bg-gray-700
-              transition-colors"
+            <div
+              className="aspect-square w-full rounded-lg overflow-hidden relative
+              bg-gray-100 dark:bg-gray-700 transition-colors"
             >
               {formData.images[index] ? (
                 <>
@@ -91,9 +72,7 @@ const FormStep3: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
                   type="button"
                   onClick={() => fileInputRefs[index].current?.click()}
                   className="w-full h-full flex flex-col items-center justify-center
-                    hover:bg-gray-200 dark:hover:bg-gray-600
-                    transition-colors
-                  "
+                    hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   <ImagePlus className="w-6 h-6 text-gray-400 dark:text-gray-500 mb-2" />
                   <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -106,9 +85,7 @@ const FormStep3: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
         ))}
       </div>
 
-      {errors.images && (
-        <p className="mt-1 text-sm text-red-500">{errors.images}</p>
-      )}
+      {errors.images && <p className="mt-1 text-sm text-red-500">{errors.images}</p>}
     </div>
   );
 };
