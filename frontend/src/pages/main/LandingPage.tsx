@@ -5,7 +5,7 @@ import Navbar from '../../components/main/layout/Navbar';
 import Footer from '../../components/main/layout/Footer';
 import Card from '../../components/main/ui/Card';
 import Button from '../../components/main/ui/Button';
-import { serviceCards, vehicles } from '../../data/main/mockData';
+import { serviceCards } from '../../data/main/mockData';
 import LandingPageVehicles from './LandingPageVehicles';
 import LandingPageSpareParts from './LandingPageSpareParts';
 

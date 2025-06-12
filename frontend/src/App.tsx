@@ -29,6 +29,7 @@ import VehicleDealershipProfile from './pages/main/vehicle_dealership/VehicleDea
 import VehicleAddMultiStepForm from './forms/create_vehicleadd_form/VehicleAddMultiStepForm';
 import SparePartsAddMultiStepForm from './forms/create_sparepartsadd_form/SparePartsAddMultiStepForm';
 import SparePartsDetailedView from './pages/main/SparePartsDetailedView';
+import AdminDashboard from './pages/main/admin/AdminDashboard';
 
 function App() {
   return (
@@ -68,6 +69,8 @@ function App() {
           <Route path="/garageform" element={<GarageProfileForm />} />
           <Route path="/create-vehicle-add" element={<VehicleAddMultiStepForm />} />
           <Route path="/create-sparepart-add" element={<SparePartsAddMultiStepForm />} />
+          
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </ThemeProvider>
