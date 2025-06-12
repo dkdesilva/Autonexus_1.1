@@ -1030,6 +1030,102 @@ app.get('/api/sparepart/:id', (req, res) => {
   });
 });
 
+// Vehicle listings for logged-in customer
+app.get('/api/customer/vehicles', authenticateJWT, (req, res) => {
+  const userId = req.user.id;
+
+  const sql = `
+    SELECT 
+      a.ad_id, a.title, a.description, a.price, a.province AS ad_province, a.city, 
+      a.phone_number AS ad_phone, a.selling_status, a.approval_status, a.created_at AS ad_created_at,
+
+      i.item_id, i.item_type, i.item_condition, i.created_at AS item_created_at,
+
+      im.image_url1, im.image_url2, im.image_url3, im.image_url4,
+
+      v.vehicle_id, v.brand, v.color, v.made_year, v.mileage, v.fuel_type, v.transmission, v.created_at AS vehicle_created_at
+
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    JOIN item_images im ON i.item_id = im.item_id
+    JOIN vehicles v ON i.item_id = v.item_id
+    WHERE 
+      a.user_id = ? 
+      AND a.is_deleted = 0 
+      AND i.is_deleted = 0 
+      AND im.is_deleted = 0 
+      AND v.is_deleted = 0
+    ORDER BY a.created_at DESC
+  `;
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching vehicle data:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    const formatted = results.map(ad => ({
+      ...ad,
+      images: [
+        ad.image_url1 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url1}` : null,
+        ad.image_url2 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url2}` : null,
+        ad.image_url3 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url3}` : null,
+        ad.image_url4 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url4}` : null,
+      ].filter(Boolean),
+    }));
+
+    res.status(200).json({ vehicles: formatted });
+  });
+});
+
+// Spare part listings for logged-in customer
+app.get('/api/customer/spareparts', authenticateJWT, (req, res) => {
+  const userId = req.user.id;
+
+  const sql = `
+    SELECT 
+      a.ad_id, a.title, a.description, a.price, a.province AS ad_province, a.city, 
+      a.phone_number AS ad_phone, a.selling_status, a.approval_status, a.created_at AS ad_created_at,
+
+      i.item_id, i.item_type, i.item_condition, i.created_at AS item_created_at,
+
+      im.image_url1, im.image_url2, im.image_url3, im.image_url4,
+
+      s.spare_id, s.brand, s.color, s.material, s.model_compatibility, s.made_year, s.quantity, s.created_at AS spare_created_at
+
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    JOIN item_images im ON i.item_id = im.item_id
+    JOIN spareparts s ON i.item_id = s.item_id
+    WHERE 
+      a.user_id = ? 
+      AND a.is_deleted = 0 
+      AND i.is_deleted = 0 
+      AND im.is_deleted = 0 
+      AND s.is_deleted = 0
+    ORDER BY a.created_at DESC
+  `;
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching spare parts:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    const formatted = results.map(ad => ({
+      ...ad,
+      images: [
+        ad.image_url1 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url1}` : null,
+        ad.image_url2 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url2}` : null,
+        ad.image_url3 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url3}` : null,
+        ad.image_url4 ? `${req.protocol}://${req.get('host')}/images/${ad.image_url4}` : null,
+      ].filter(Boolean),
+    }));
+
+    res.status(200).json({ spareparts: formatted });
+  });
+});
+
 
 // Start Server
 app.listen(5000, () => {
