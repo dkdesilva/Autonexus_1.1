@@ -76,6 +76,16 @@ const Navbar: React.FC = () => {
                 Vehicles
               </ScrollLink>
               <ScrollLink
+                to="spareparts"
+                spy={true}
+                smooth={true}
+                offset={-80}
+                duration={500}
+                className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+              >
+                Spareparts
+              </ScrollLink>
+              <ScrollLink
                 to="about"
                 spy={true}
                 smooth={true}

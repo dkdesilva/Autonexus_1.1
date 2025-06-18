@@ -3,19 +3,17 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Search, Shield, Star, Users, Car, GalleryVerticalEnd, Wrench, Building, ShieldCheck, MapPin, Phone, Mail } from 'lucide-react';
 import Navbar from '../../components/main/layout/Navbar';
 import Footer from '../../components/main/layout/Footer';
-import Card from '../../components/main/ui/Card';
 import Button from '../../components/main/ui/Button';
-import { serviceCards } from '../../data/main/mockData';
 import LandingPageVehicles from './LandingPageVehicles';
 import LandingPageSpareParts from './LandingPageSpareParts';
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-blue-950 transition-colors duration-300">
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8  dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center">
           <div className="lg:w-1/2 mb-12 lg:mb-0 animate-slide-up">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white leading-tight mb-6">
@@ -52,7 +50,7 @@ const LandingPage: React.FC = () => {
       </section>
       
       {/* Stats Section */}
-      <section className="py-12 bg-white dark:bg-gray-900 transition-colors duration-300">
+      <section className=" py-12 bg-white  dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -72,7 +70,7 @@ const LandingPage: React.FC = () => {
       </section>
       
       {/* About Section */}
-      <section id="about" className="py-20 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+      <section id="about" className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">About AutoNexus</h2>
@@ -114,116 +112,9 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
       
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-white dark:bg-gray-900 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Our Services</h2>
-            <div className="w-24 h-1 bg-blue-600 mx-auto mb-8"></div>
-            <p className="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-300">
-              We offer a comprehensive range of services to meet all your automotive needs
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {serviceCards.map((service, index) => (
-              <Card 
-                key={service.id}
-                className="h-full animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-                hoverEffect={true}
-                onClick={() => window.location.href = service.link}
-              >
-                <div className="p-6 flex flex-col items-center text-center">
-                  <div className="mb-4">
-                    {service.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{service.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">{service.description}</p>
-                  <Link
-                    to={service.link}
-                    className="mt-auto text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium inline-flex items-center"
-                  >
-                    Learn More <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-      
       {/* Featured Vehicles Section */}
       <LandingPageVehicles />
       <LandingPageSpareParts />
-      
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-white dark:bg-gray-900 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Contact Us</h2>
-              <div className="w-24 h-1 bg-blue-600 mb-8"></div>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                Have questions or need assistance? Reach out to our team and we'll get back to you as soon as possible.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <MapPin className="h-6 w-6 text-blue-600 dark:text-blue-400 mt-0.5 mr-3" />
-                  <span className="text-gray-600 dark:text-gray-300">123 Auto Avenue, Drive City, DC 10001</span>
-                </div>
-                <div className="flex items-center">
-                  <Phone className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
-                  <span className="text-gray-600 dark:text-gray-300">+1 (555) 123-4567</span>
-                </div>
-                <div className="flex items-center">
-                  <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
-                  <span className="text-gray-600 dark:text-gray-300">contact@autonexus.com</span>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <form className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in">
-                <div className="mb-4">
-                  <label htmlFor="name" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Your name"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="email" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Your email"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="message" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Your message"
-                  ></textarea>
-                </div>
-                <Button variant="primary" fullWidth>Send Message</Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
       
       <Footer />
     </div>

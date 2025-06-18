@@ -58,7 +58,6 @@ const ServicesSection: React.FC = () => {
                     <p className="text-gray-600 dark:text-gray-400 flex-grow">{service.description}</p>
                     <div className="mt-4">
                       <button className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
-                        Learn more →
                       </button>
                     </div>
                   </CardContent>

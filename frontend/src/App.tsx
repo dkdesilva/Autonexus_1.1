@@ -23,13 +23,14 @@ import CustomerProfile from './pages/main/customer/CustomerProfile';
 import SparePartsProfle from './pages/main/spare_part_shop/SparePartsProfle';
 import CustomerProfileForm from './forms/customer/CustomerProfileForm';
 import GarageProfileForm from './forms/grage/GarageProfileForm';
-import GarageProfileFormSection from './components/landing/sections/garage/GarageProfileFormSection';
 import GrageProfile from './pages/main/garage/GrageProfile';
 import VehicleDealershipProfile from './pages/main/vehicle_dealership/VehicleDealershipProfile';
 import VehicleAddMultiStepForm from './forms/create_vehicleadd_form/VehicleAddMultiStepForm';
 import SparePartsAddMultiStepForm from './forms/create_sparepartsadd_form/SparePartsAddMultiStepForm';
 import SparePartsDetailedView from './pages/main/SparePartsDetailedView';
 import AdminDashboard from './pages/main/admin/AdminDashboard';
+import AdminSignup from './pages/main/admin/AdminSignup';
+import AdminLogin from './pages/main/admin/AdminLogin';
 
 function App() {
   return (
@@ -62,6 +63,8 @@ function App() {
           <Route path="/vehicledealer-signup" element={<VehicleDealershipSignUp />} />
           <Route path="/garage-signin" element={<GarageSignIn />} />
           <Route path="/garage-signup" element={<GarageSignUp />} />
+          <Route path="/admin-signup" element={<AdminSignup />} />
+          <Route path="/admin-signin" element={<AdminLogin />} />
 
 
 
@@ -70,7 +73,7 @@ function App() {
           <Route path="/create-vehicle-add" element={<VehicleAddMultiStepForm />} />
           <Route path="/create-sparepart-add" element={<SparePartsAddMultiStepForm />} />
           
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admindashboard" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </ThemeProvider>

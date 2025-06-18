@@ -35,7 +35,17 @@ const authenticateJWT = (req, res, next) => {
     next();
   });
 };
+ // JWT Admin Middelware
+const authenticateAdminJWT = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) return res.status(403).json({ message: 'Access denied. No token provided.' });
 
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ message: 'Invalid or expired token.' });
+    req.admin = decoded;  // changed from req.user to req.admin
+    next();
+  });
+};
 
 // ------------------------- Multer config for storing images in /public/images -------------------------
 const storage = multer.diskStorage({
@@ -58,6 +68,9 @@ const upload = multer({
     else cb(new Error('Only image files allowed!'), false);
   },
 });
+
+// ✅ Serve static files from /public/images
+app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
 // ------------------------- Customer -------------------------
 
@@ -691,6 +704,8 @@ app.get('/api/vehicle/all', async (req, res) => {
     SELECT 
       a.ad_id,
       a.user_id,
+      a.admin_id,
+      a.approval_status,
       a.title,
       a.description,
       a.price,
@@ -724,7 +739,6 @@ app.get('/api/vehicle/all', async (req, res) => {
       return res.status(500).json({ message: 'Error fetching vehicle ads', error: err.message });
     }
 
-    // Update image URLs to include full path
     const formatted = results.map(ad => ({
       ...ad,
       images: [
@@ -738,6 +752,7 @@ app.get('/api/vehicle/all', async (req, res) => {
     res.json(formatted);
   });
 });
+
 
 app.get('/api/vehicle/:id', (req, res) => {
   const { id } = req.params;
@@ -1126,6 +1141,256 @@ app.get('/api/customer/spareparts', authenticateJWT, (req, res) => {
   });
 });
 
+// ------------------------- Admin -------------------------
+
+// Admin Signup
+app.post('/api/admin/signup', async (req, res) => {
+  const { email, password, phone_number, address, province, district } = req.body;
+
+  if (!email || !password || !phone_number || !address || !province || !district) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  try {
+    // Check if email already exists
+    const [existing] = await db.promise().query(
+      'SELECT * FROM admins WHERE email = ? AND is_deleted = 0',
+      [email]
+    );
+    if (existing.length > 0) {
+      return res.status(409).json({ message: 'Email already in use.' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert admin into admins table (without user_type)
+    const [result] = await db.promise().query(
+      `INSERT INTO admins 
+        (email, password, phone_number, address, province, district) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [email, hashedPassword, phone_number, address, province, district]
+    );
+
+    res.status(201).json({ message: 'Admin registered successfully', admin_id: result.insertId });
+  } catch (err) {
+    console.error('Signup error:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and Password are required' });
+  }
+
+  try {
+    // Query admin by email
+    const [rows] = await db.promise().query(
+      `SELECT * FROM admins WHERE email = ? AND is_deleted = 0`,
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    const admin = rows[0];
+
+    // Verify password with bcrypt
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Sign JWT with admin_id and email payload
+    const token = jwt.sign(
+      { admin_id: admin.admin_id, email: admin.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Send back token and admin info (you can exclude password here)
+    const { password: _, ...adminWithoutPassword } = admin;
+
+    res.json({ token, admin: adminWithoutPassword });
+  } catch (err) {
+    console.error('Server error:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+
+// 🔍 Get All User + Customer Details
+app.get('/api/users/customer', authenticateJWT, (req, res) => {
+  const query = `
+    SELECT 
+      u.user_id, u.email, u.user_type, u.phone_number, u.address,
+      u.province, u.district, u.profile_picture, u.cover_picture,
+      c.cus_id, c.first_name, c.middle_name, c.last_name,
+      c.gender, c.birthday,
+      u.created_at AS user_created_at, c.created_at AS customer_created_at
+    FROM users u
+    JOIN customer c ON u.user_id = c.user_id
+    WHERE u.is_deleted = 0 AND c.is_deleted = 0
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const baseUrl = process.env.NODE_ENV === 'production'
+  ? 'https://yourdomain.com/images/'
+  : `${req.protocol}://${req.get('host')}/images/`;
+
+    const formattedResults = results.map(row => ({
+      ...row,
+      profile_picture: row.profile_picture ? baseUrl + row.profile_picture : null,
+      cover_picture: row.cover_picture ? baseUrl + row.cover_picture : null,
+    }));
+
+    res.json(formattedResults);
+  });
+});
+
+// 🔍 Get All Spare Parts Shop Users
+app.get('/api/users/spareparts', authenticateJWT, (req, res) => {
+  const query = `
+    SELECT 
+      u.user_id, u.email, u.user_type, u.phone_number, u.address,
+      u.province, u.district, u.profile_picture, u.cover_picture,
+      u.created_at AS user_created_at,
+      s.spare_id, s.company_name, s.description, s.founded_year, 
+      s.owner_name, s.opening_days, s.opening_hours, 
+      s.created_at AS shop_created_at
+    FROM users u
+    JOIN spareparts_shop s ON u.user_id = s.user_id
+    WHERE u.is_deleted = 0 AND s.is_deleted = 0
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    const baseUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://yourdomain.com/images/'
+        : `${req.protocol}://${req.get('host')}/images/`;
+
+    const formattedResults = results.map(row => ({
+      user_id: row.user_id,
+      email: row.email,
+      user_type: row.user_type,
+      phone_number: row.phone_number,
+      address: row.address,
+      province: row.province,
+      district: row.district,
+      profile_picture: row.profile_picture
+        ? baseUrl + row.profile_picture
+        : 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+      cover_picture: row.cover_picture ? baseUrl + row.cover_picture : null,
+      user_created_at: row.user_created_at,
+
+      // Spare Parts Shop Info
+      spare_id: row.spare_id,
+      company_name: row.company_name,
+      description: row.description,
+      founded_year: row.founded_year,
+      owner_name: row.owner_name,
+      opening_days: row.opening_days,
+      opening_hours: row.opening_hours,
+      shop_created_at: row.shop_created_at,
+    }));
+
+    res.json(formattedResults);
+  });
+});
+
+// 🔍 Get All Drdealers Users
+app.get('/api/users/cardealers', authenticateJWT, (req, res) => {
+  const query = `
+    SELECT 
+      u.user_id, u.email, u.user_type, u.phone_number, u.address,
+      u.province, u.district, u.profile_picture, u.cover_picture,
+      u.created_at AS user_created_at,
+      c.dealer_id, c.company_name, c.description, c.founded_year, 
+      c.owner_name, c.opening_days, c.opening_hours, 
+      c.created_at AS dealer_created_at
+    FROM users u
+    JOIN car_dealerships c ON u.user_id = c.user_id
+    WHERE u.is_deleted = 0 AND c.is_deleted = 0
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    const baseUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://yourdomain.com/images/'
+        : `${req.protocol}://${req.get('host')}/images/`;
+
+    const formattedResults = results.map(row => ({
+      user_id: row.user_id,
+      email: row.email,
+      user_type: row.user_type,
+      phone_number: row.phone_number,
+      address: row.address,
+      province: row.province,
+      district: row.district,
+      profile_picture: row.profile_picture
+        ? baseUrl + row.profile_picture
+        : 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+      cover_picture: row.cover_picture ? baseUrl + row.cover_picture : null,
+      user_created_at: row.user_created_at,
+
+      // Car Dealership Info
+      dealer_id: row.dealer_id,
+      company_name: row.company_name,
+      description: row.description,
+      founded_year: row.founded_year,
+      owner_name: row.owner_name,
+      opening_days: row.opening_days,
+      opening_hours: row.opening_hours,
+      dealer_created_at: row.dealer_created_at,
+    }));
+
+    res.json(formattedResults);
+  });
+});
+
+// ✅ Vehicle Advertisements Approval Status API (Approve or Reject)
+app.put('/api/advertisements/:adId', authenticateAdminJWT, async (req, res) => {
+  const { adId } = req.params;
+  const { approval_status } = req.body;
+
+  // Validate approval_status value
+  const validStatuses = ['Approved', 'Rejected', 'Pending'];
+  if (!validStatuses.includes(approval_status)) {
+    return res.status(400).json({ message: 'Invalid approval status' });
+  }
+
+  const adminId = req.admin.admin_id;  // extract admin_id from JWT payload
+
+  try {
+    const [result] = await db.promise().query(
+      'UPDATE advertisements SET approval_status = ?, admin_id = ? WHERE ad_id = ?',
+      [approval_status, adminId, adId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Advertisement not found' });
+    }
+
+    res.json({ message: 'Advertisement updated successfully' });
+  } catch (error) {
+    console.error('DB error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 
 // Start Server
 app.listen(5000, () => {
