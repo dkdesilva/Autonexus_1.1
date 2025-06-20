@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
                 smooth={true}
                 offset={-80}
                 duration={500}
-                className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+                className="text-gray-1000 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
               >
                 Services
               </ScrollLink>
@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
                 smooth={true}
                 offset={-80}
                 duration={500}
-                className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+                className="text-gray-10 00 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
               >
                 Vehicles
               </ScrollLink>
@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
                 smooth={true}
                 offset={-80}
                 duration={500}
-                className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+                className="text-gray-1000 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
               >
                 Spareparts
               </ScrollLink>
@@ -91,9 +91,19 @@ const Navbar: React.FC = () => {
                 smooth={true}
                 offset={-80}
                 duration={500}
-                className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+                className="text-gray-1000 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
               >
                 About Us
+              </ScrollLink>
+              <ScrollLink
+                to="contact"
+                spy={true}
+                smooth={true}
+                offset={-80}
+                duration={500}
+                className="text-gray-1000 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+              >
+                Contact Us
               </ScrollLink>
             </div>
 
@@ -143,6 +153,17 @@ const Navbar: React.FC = () => {
               onClick={closeMenu}
             >
               Vehicles
+            </ScrollLink>
+            <ScrollLink
+              to="spareparts"
+              spy={true}
+              smooth={true}
+              offset={-80}
+              duration={500}
+              className="block py-2 text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium"
+              onClick={closeMenu}
+            >
+              Spareparts
             </ScrollLink>
             <ScrollLink
               to="about"

@@ -1392,6 +1392,150 @@ app.put('/api/advertisements/:adId', authenticateAdminJWT, async (req, res) => {
   }
 });
 
+// ------------------------- End Admin -------------------------
+
+// ------------------------- Get All Car Dealers Data -------------------------
+
+app.get('/api/dealerships', (req, res) => {
+  const query = `
+    SELECT 
+      cd.dealer_id,
+      cd.company_name,
+      cd.description,
+      cd.founded_year,
+      cd.owner_name,
+      cd.opening_days,
+      cd.opening_hours,
+      cd.created_at AS dealership_created_at,
+
+      u.user_id,
+      u.email,
+      u.phone_number,
+      u.address,
+      u.province,
+      u.district,
+      u.profile_picture,
+      u.cover_picture,
+      u.created_at AS user_created_at,
+
+      JSON_ARRAYAGG(
+        IF(a.ad_id IS NOT NULL,
+          JSON_OBJECT(
+            'ad_id', a.ad_id,
+            'title', a.title,
+            'price', a.price,
+            'approval_status', a.approval_status,
+            'image_url', (
+              SELECT ii.image_url1 
+              FROM item_images ii
+              JOIN items it ON ii.item_id = it.item_id
+              WHERE it.ad_id = a.ad_id AND ii.is_deleted = 0
+              LIMIT 1
+            )
+          ),
+          NULL
+        )
+      ) AS vehicles
+
+    FROM car_dealerships cd
+    JOIN users u ON cd.user_id = u.user_id
+
+    LEFT JOIN advertisements a ON a.user_id = u.user_id 
+      AND a.is_deleted = 0 
+      AND a.selling_status = 'available' 
+      AND a.approval_status = 'approved'
+
+    WHERE cd.is_deleted = 0 AND u.is_deleted = 0
+
+    GROUP BY cd.dealer_id
+    ORDER BY cd.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching dealership data:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    const finalResults = results.map(dealer => {
+      if (dealer.vehicles && Array.isArray(dealer.vehicles)) {
+        // Parse JSON if it's returned as string (in some MySQL configurations)
+        if (typeof dealer.vehicles === 'string') {
+          dealer.vehicles = JSON.parse(dealer.vehicles);
+        }
+
+        // Remove any null entries
+        dealer.vehicles = dealer.vehicles.filter(v => v !== null).slice(0, 4);
+      } else {
+        dealer.vehicles = [];
+      }
+      return dealer;
+    });
+
+    res.json(finalResults);
+  });
+});
+
+
+
+// ------------------------- Get All Car Dealers Data For Customer View -------------------------
+
+app.get('/api/dealerships/:id', (req, res) => {
+  const dealerId = req.params.id;
+
+  const query = `
+    SELECT * FROM car_dealerships 
+    JOIN users ON car_dealerships.user_id = users.user_id 
+    WHERE dealer_id = ?
+  `;
+
+  db.query(query, [dealerId], (err, results) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Dealership not found' });
+    }
+
+    res.json(results[0]);
+  });
+});
+
+// ------------------------- Get All Car Dealers lsitings For Customer View -------------------------
+
+app.get('/api/dealerships/:id/listings', (req, res) => {
+  const dealerId = req.params.id;
+
+  const query = `
+    SELECT 
+      a.ad_id, a.title, a.description, a.price, a.selling_status, a.approval_status, a.created_at AS ad_created_at,
+      a.province AS ad_province, a.city, a.phone_number AS ad_phone,
+      v.vehicle_id, v.brand, v.made_year, v.mileage, v.fuel_type, v.transmission,
+      it.item_id, it.item_type, it.item_condition, it.created_at AS item_created_at,
+      i.image_url1, i.image_url2, i.image_url3, i.image_url4
+    FROM advertisements a
+    JOIN items it ON a.ad_id = it.ad_id
+    JOIN vehicles v ON v.item_id = it.item_id
+    LEFT JOIN item_images i ON i.item_id = it.item_id AND i.is_deleted = 0
+    WHERE a.user_id IN (SELECT user_id FROM car_dealerships WHERE dealer_id = ?)
+      AND a.is_deleted = 0 AND it.is_deleted = 0 AND v.is_deleted = 0;
+  `;
+
+  db.query(query, [dealerId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+    res.json(results);
+  });
+});
+
+
+
+
+
 // Start Server
 app.listen(5000, () => {
   console.log('Server running on port 5000');

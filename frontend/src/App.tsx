@@ -4,7 +4,6 @@ import LandingPage from './pages/main/LandingPage';
 import GetStarted from './pages/main/GetStarted';
 import SignUp from './pages/main/SignUp';
 import SignIn from './pages/main/SignIn';
-import Home from './pages/main/Home';
 import DetailedView from './pages/main/DetailedView';
 import Vehicles from './pages/main/Vehicles';
 import SpareParts from './pages/main/SpareParts';
@@ -31,6 +30,7 @@ import SparePartsDetailedView from './pages/main/SparePartsDetailedView';
 import AdminDashboard from './pages/main/admin/AdminDashboard';
 import AdminSignup from './pages/main/admin/AdminSignup';
 import AdminLogin from './pages/main/admin/AdminLogin';
+import DealershipProfileCustomerView from './pages/main/DealershipProfileCustomerView';
 
 function App() {
   return (
@@ -42,7 +42,6 @@ function App() {
           <Route path="/get-started" element={<GetStarted />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/home" element={<Home />} />
           <Route path="/details/:id" element={<DetailedView />} />
           <Route path="/sparedetails/:id" element={<SparePartsDetailedView />} />
           <Route path="/vehicles" element={<Vehicles />} />
@@ -74,6 +73,9 @@ function App() {
           <Route path="/create-sparepart-add" element={<SparePartsAddMultiStepForm />} />
           
           <Route path="/admindashboard" element={<AdminDashboard />} />
+
+          <Route path="/dealership/:id" element={<DealershipProfileCustomerView />} />
+
         </Routes>
       </Router>
     </ThemeProvider>
