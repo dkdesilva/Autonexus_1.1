@@ -289,10 +289,9 @@ app.get('/api/user', authenticateJWT, (req, res) => {
 // ------------------------- Get Customer Details (including user info) -------------------------
 
 app.get('/api/customer/details', authenticateJWT, (req, res) => {
-  // We get the user_id from the JWT token (you can adjust this as per your token payload)
   const userId = req.user.id;
 
-  const sql = `
+  const customerSql = `
     SELECT 
       c.cus_id,
       c.user_id,
@@ -315,17 +314,49 @@ app.get('/api/customer/details', authenticateJWT, (req, res) => {
     WHERE c.user_id = ? AND c.is_deleted = 0 AND (u.is_deleted = 0 OR u.is_deleted IS NULL)
   `;
 
-  db.query(sql, [userId], (err, results) => {
+  db.query(customerSql, [userId], (err, customerResults) => {
     if (err) {
-      console.error(err);
+      console.error('Customer Query Error:', err);
       return res.status(500).json({ message: 'Database query error' });
     }
-    if (results.length === 0) {
+    if (customerResults.length === 0) {
       return res.status(404).json({ message: 'No customer details found' });
     }
-    res.json(results[0]);
+
+    const customerData = customerResults[0];
+
+    // Query for listing counts by approval_status
+    const listingsSql = `
+      SELECT 
+        COUNT(*) AS total,
+        SUM(CASE WHEN approval_status = 'Approved' THEN 1 ELSE 0 END) AS approved,
+        SUM(CASE WHEN approval_status = 'Rejected' THEN 1 ELSE 0 END) AS rejected
+      FROM advertisements
+      WHERE user_id = ?
+    `;
+
+    db.query(listingsSql, [userId], (err, listingResults) => {
+      if (err) {
+        console.error('Listings Count Query Error:', err);
+        return res.status(500).json({ message: 'Error fetching listings count' });
+      }
+
+      const counts = listingResults[0] || {
+        total: 0,
+        approved: 0,
+        rejected: 0,
+      };
+
+      res.json({
+        ...customerData,
+        AllListingsCount: counts.total,
+        ApprovedListingsCount: counts.approved,
+        RejectededListingsCount: counts.rejected,
+      });
+    });
   });
 });
+
 
 
 // ------------------------- Upload profile image -------------------------
@@ -917,6 +948,8 @@ app.get('/api/sparepart/all', async (req, res) => {
     SELECT 
       a.ad_id,
       a.user_id,
+      a.admin_id,
+      a.approval_status,
       a.title,
       a.description,
       a.price,
@@ -1392,6 +1425,113 @@ app.put('/api/advertisements/:adId', authenticateAdminJWT, async (req, res) => {
   }
 });
 
+app.get('/api/user-stats', (req, res) => {
+  const query = `
+    SELECT
+      COUNT(CASE WHEN user_type = 'Customer' AND is_deleted = 0 THEN 1 END) AS customerCount,
+      COUNT(CASE WHEN user_type = 'Sparepart' AND is_deleted = 0 THEN 1 END) AS sparepartCount,
+      COUNT(CASE WHEN user_type = 'dealership' AND is_deleted = 0 THEN 1 END) AS dealerCount,
+      COUNT(CASE WHEN user_type = 'Garage' AND is_deleted = 0 THEN 1 END) AS garageCount
+    FROM users
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('❌ Failed to fetch user stats:', err.message);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    res.json(results[0]);
+  });
+});
+
+app.get('/api/items/count-by-type', (req, res) => {
+  const query = `
+    SELECT
+      SUM(CASE WHEN item_type = 'Vehicle' AND is_deleted = 0 THEN 1 ELSE 0 END) AS vehicleCount,
+      SUM(CASE WHEN item_type = 'Spare Part' AND is_deleted = 0 THEN 1 ELSE 0 END) AS sparePartCount
+    FROM items
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('❌ Error counting items by type:', err.message);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.json(results[0]);
+  });
+});
+
+
+app.get('/api/spareparts/count-by-approval', (req, res) => {
+  const query = `
+    SELECT
+      SUM(CASE WHEN a.approval_status = 'Approved' THEN 1 ELSE 0 END) AS approvedCount,
+      SUM(CASE WHEN a.approval_status = 'Pending' THEN 1 ELSE 0 END) AS pendingCount,
+      SUM(CASE WHEN a.approval_status = 'Rejected' THEN 1 ELSE 0 END) AS rejectedCount
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    WHERE i.item_type = 'Spare Part' AND a.is_deleted = 0 AND i.is_deleted = 0
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('❌ Error counting spare parts by approval:', err.message);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.json(results[0]);
+  });
+});
+
+app.get('/api/vehicles/count-by-approval', (req, res) => {
+  const query = `
+    SELECT
+      SUM(CASE WHEN a.approval_status = 'Approved' THEN 1 ELSE 0 END) AS approvedCount,
+      SUM(CASE WHEN a.approval_status = 'Pending' THEN 1 ELSE 0 END) AS pendingCount,
+      SUM(CASE WHEN a.approval_status = 'Rejected' THEN 1 ELSE 0 END) AS rejectedCount
+    FROM advertisements a
+    JOIN items i ON a.ad_id = i.ad_id
+    WHERE i.item_type = 'Vehicle' AND a.is_deleted = 0 AND i.is_deleted = 0
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('❌ Error counting vehicles by approval:', err.message);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.json(results[0]);
+  });
+});
+
+app.get('/api/users-summary', (req, res) => {
+  const query = `
+    SELECT 
+        u.user_id,
+        u.created_at,
+        u.user_type,
+        u.province,
+        u.email,
+        COALESCE(c.first_name, cd.owner_name, ss.owner_name, g.owner_name) AS owner_name
+    FROM users u
+    LEFT JOIN customer c ON u.user_id = c.user_id AND c.is_deleted = 0
+    LEFT JOIN car_dealerships cd ON u.user_id = cd.user_id AND cd.is_deleted = 0
+    LEFT JOIN spareparts_shop ss ON u.user_id = ss.user_id AND ss.is_deleted = 0
+    LEFT JOIN garages g ON u.user_id = g.user_id AND g.is_deleted = 0
+    WHERE u.is_deleted = 0
+    ORDER BY u.created_at ASC
+    LIMIT 9
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Query error:', err);
+      return res.status(500).json({ error: 'Database query failed' });
+    }
+    res.json(results);
+  });
+});
+
+
 // ------------------------- End Admin -------------------------
 
 // ------------------------- Get All Car Dealers Data -------------------------
@@ -1532,6 +1672,113 @@ app.get('/api/dealerships/:id/listings', (req, res) => {
   });
 });
 
+
+app.post('/api/mapgarages', (req, res) => {
+  const { garage_name, description, lat, lng } = req.body;
+  db.query(
+    'INSERT INTO garages (garage_name, description, lat, lng) VALUES (?, ?, ?, ?)',
+    [garage_name, description, lat, lng],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, insertedId: result.insertId });
+    }
+  );
+});
+
+// GET: All garages
+app.get('/api/mapgarages', (req, res) => {
+  const sql = `
+    SELECT
+      g.garage_id,
+      g.company_name AS garage_name,
+      g.description,
+      g.lat,
+      g.lng,
+      u.address,
+      u.province,
+      u.district,
+      u.profile_picture
+    FROM garages g
+    JOIN users u ON g.user_id = u.user_id
+    WHERE g.is_deleted = 0 AND g.lat IS NOT NULL AND g.lng IS NOT NULL
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('SQL error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    // Append full image URL if needed
+    const updatedResults = results.map(garage => ({
+      ...garage,
+      profile_picture: garage.profile_picture 
+        ? `${req.protocol}://${req.get('host')}/images/${garage.profile_picture}`
+        : null
+    }));
+
+    res.json(updatedResults);
+  });
+});
+
+
+// API to get all garages with user info
+app.get('/api/garagesall', (req, res) => {
+  const sql = `
+    SELECT
+      g.garage_id,
+      g.company_name AS name,
+      g.service_type,
+      g.description,
+      g.founded_year,
+      g.opening_days,
+      g.opening_hours,
+      u.user_id,
+      u.email,
+      u.phone_number,
+      u.address,
+      u.province,
+      u.district,
+      u.profile_picture,
+      u.cover_picture
+    FROM garages g
+    JOIN users u ON g.user_id = u.user_id
+    WHERE g.is_deleted = 0
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('SQL Error:', err.message);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    const formatted = results.map(row => ({
+      garage_id: row.garage_id,
+      name: row.name,
+      service_type: row.service_type,
+      description: row.description,
+      founded_year: row.founded_year,
+      opening_days: row.opening_days,
+      opening_hours: row.opening_hours,
+      user: {
+        user_id: row.user_id,
+        email: row.email,
+        phone_number: row.phone_number,
+        address: row.address,
+        province: row.province,
+        district: row.district,
+        profile_picture: row.profile_picture
+          ? `${req.protocol}://${req.get('host')}/images/${row.profile_picture}`
+          : null,
+        cover_picture: row.cover_picture
+          ? `${req.protocol}://${req.get('host')}/images/${row.cover_picture}`
+          : null
+      }
+    }));
+
+    res.json(formatted);
+  });
+});
 
 
 

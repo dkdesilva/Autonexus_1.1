@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomerProfileImageSection from './CustomerProfileImageSection';
+import CustomerProfileStats from './CustomerProfileStats';
 
 interface UserProfile {
   first_name: string;
@@ -9,6 +10,9 @@ interface UserProfile {
   listingsCount?: number;
   soldCount?: number;
   favoritesCount?: number;
+  AllListingsCount?: number;
+  ApprovedListingsCount?: number;
+  RejectededListingsCount?: number;
 }
 
 const CustomerProfileHeaderSection: React.FC = () => {
@@ -103,21 +107,11 @@ const CustomerProfileHeaderSection: React.FC = () => {
                 </button>
               </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-4 mt-6">
-              <div className="text-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="text-xl font-semibold">{user?.listingsCount ?? 0}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Listings</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="text-xl font-semibold">{user?.soldCount ?? 0}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Sold</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="text-xl font-semibold">{user?.favoritesCount ?? 0}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Favorites</div>
-              </div>
-            </div>
+            <CustomerProfileStats
+              AllListingsCount={user?.AllListingsCount}
+              ApprovedListingsCount={user?.ApprovedListingsCount}
+              RejectededListingsCount={user?.RejectededListingsCount}
+            />
           </div>
         </div>
       </div>

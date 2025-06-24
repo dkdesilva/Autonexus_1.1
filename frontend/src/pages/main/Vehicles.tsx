@@ -42,7 +42,13 @@ const Vehicles: React.FC = () => {
     const fetchVehicles = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/vehicle/all');
-        setVehicles(response.data); // API returns array directly
+
+        // ✅ Filter only approved vehicles
+        const approvedVehicles = response.data.filter(
+          (vehicle: any) => vehicle.approval_status === 'Approved'
+        );
+
+        setVehicles(approvedVehicles);
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch vehicles:', error);
@@ -52,7 +58,7 @@ const Vehicles: React.FC = () => {
     fetchVehicles();
   }, []);
 
-  const filteredVehicles = vehicles; // later apply filtering here
+  const filteredVehicles = vehicles; // You can apply filter logic here later
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
@@ -76,11 +82,9 @@ const Vehicles: React.FC = () => {
           </Button>
         </div>
 
-        {/* Filter Section */}
         {isFilterOpen && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8 animate-slide-down">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Add your actual filter inputs here */}
               <input
                 type="text"
                 placeholder="Brand"
@@ -105,7 +109,7 @@ const Vehicles: React.FC = () => {
                 onChange={handleFilterChange}
                 className="p-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
               />
-              {/* Add more inputs for minYear, maxYear, etc. */}
+              {/* Add additional filter fields if needed */}
             </div>
 
             <div className="flex justify-end mt-6">
@@ -119,7 +123,6 @@ const Vehicles: React.FC = () => {
           </div>
         )}
 
-        {/* Sorting and Results Count */}
         <div className="flex flex-col sm:flex-row justify-between items-center bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 mb-8 animate-fade-in">
           <p className="text-gray-600 dark:text-gray-300 mb-2 sm:mb-0">
             {loading
@@ -139,7 +142,6 @@ const Vehicles: React.FC = () => {
           </div>
         </div>
 
-        {/* Vehicles Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {!loading && filteredVehicles.map((vehicle: any, index: number) => (
             <Card
@@ -151,7 +153,7 @@ const Vehicles: React.FC = () => {
             >
               <div className="relative h-48 overflow-hidden rounded-t-xl">
                 <img
-                  src={vehicle.images[0]} // images[] are assumed to be full URLs
+                  src={vehicle.images[0]}
                   alt={vehicle.title}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />

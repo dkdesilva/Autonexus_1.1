@@ -31,6 +31,7 @@ import AdminDashboard from './pages/main/admin/AdminDashboard';
 import AdminSignup from './pages/main/admin/AdminSignup';
 import AdminLogin from './pages/main/admin/AdminLogin';
 import DealershipProfileCustomerView from './pages/main/DealershipProfileCustomerView';
+import GarageMap from './pages/main/garage/GarageMap';
 
 function App() {
   return (
@@ -75,6 +76,9 @@ function App() {
           <Route path="/admindashboard" element={<AdminDashboard />} />
 
           <Route path="/dealership/:id" element={<DealershipProfileCustomerView />} />
+
+          {/* <Route path="/garagemap" element={<GarageMap />} /> */}
+
 
         </Routes>
       </Router>

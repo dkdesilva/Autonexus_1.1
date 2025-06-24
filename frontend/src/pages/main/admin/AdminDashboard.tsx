@@ -6,7 +6,7 @@ import DashboardContent from './DashboardContent';
 import CustomerDeatilsContent from './CustomerDeatilsContent';
 import SparePartShopDetailsContent from './SparePartShopDetailsContent';
 import VehicleAdListContent from './VehicleAdListContent';
-import TotalOrderContent from './TotalOrderContent';
+import SparepartAdListContent from './SparepartAdListContent';
 import FavoritesContent from './FavoritesContent';
 import SettingsContent from './SettingsContent';
 import VehicleDealerDetailsContent from './VehicleDealerDetailsContent';
@@ -31,8 +31,8 @@ const AdminDashboard = () => {
         return <VehicleDealerDetailsContent />;
       case 'Vehicle Ad List':
         return <VehicleAdListContent />;
-      case 'Total order':
-        return <TotalOrderContent />;
+      case 'Sparepart Ad List':
+        return <SparepartAdListContent />;
       case 'Favorites':
         return <FavoritesContent />;
       case 'Setting':

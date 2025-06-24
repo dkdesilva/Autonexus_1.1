@@ -90,10 +90,10 @@ const Sidebar = ({ sidebarOpen, activeTab, setActiveTab }: SidebarProps) => {
           />
           <SidebarItem
             icon={<FiBook />}
-            text="Total order"
-            active={activeTab === 'Total order'}
+            text="Sparepart Ad List"
+            active={activeTab === 'Sparepart Ad List'}
             sidebarOpen={sidebarOpen}
-            onClick={() => setActiveTab('Total order')}
+            onClick={() => setActiveTab('Sparepart Ad List')}
           />
           <SidebarItem
             icon={<FiHeart />}

@@ -13,6 +13,7 @@ interface Vehicle {
   made_year: number;
   mileage: number;
   images: string[];
+  approval_status?: string;
   seller?: {
     verified: boolean;
   };
@@ -27,10 +28,14 @@ const LandingPageVehicles: React.FC = () => {
         const response = await fetch('http://localhost:5000/api/vehicle/all');
         const data = await response.json();
 
-        // Mocking seller.verified = true for demo
-        const withSellerInfo = data.map((item: any) => ({
+        // ✅ Only include vehicles that are approved
+        const approvedVehicles = data.filter(
+          (item: any) => item.approval_status === 'Approved'
+        );
+
+        const withSellerInfo = approvedVehicles.map((item: any) => ({
           ...item,
-          seller: { verified: true }, // Adjust according to actual data structure
+          seller: { verified: true }, // Mocking seller verified status
           location: `${item.province}, ${item.city}`,
         }));
 

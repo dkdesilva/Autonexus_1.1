@@ -12,6 +12,7 @@ interface SparePart {
   city: string;
   made_year: number;
   images: string[];
+  approval_status?: string;
   seller?: {
     verified: boolean;
   };
@@ -20,25 +21,28 @@ interface SparePart {
 const LandingPageSpareParts: React.FC = () => {
   const [spareParts, setSpareParts] = useState<SparePart[]>([]);
 
-  useEffect(() => {
-    const fetchSpareParts = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/sparepart/all');
-        const data = await response.json();
+useEffect(() => {
+  const fetchSpareParts = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/sparepart/all');
+      const data = await response.json();
 
-        const withSellerInfo = data.map((item: any) => ({
+      const approvedParts = data
+        .filter((item: any) => item.approval_status === 'Approved')
+        .map((item: any) => ({
           ...item,
           seller: { verified: true }, // Dummy data, update if seller info is available
         }));
 
-        setSpareParts(withSellerInfo);
-      } catch (error) {
-        console.error('Failed to fetch spare parts:', error);
-      }
-    };
+      setSpareParts(approvedParts);
+    } catch (error) {
+      console.error('Failed to fetch spare parts:', error);
+    }
+  };
 
-    fetchSpareParts();
-  }, []);
+  fetchSpareParts();
+}, []);
+
 
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">

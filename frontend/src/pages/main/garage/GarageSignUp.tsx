@@ -49,7 +49,7 @@ const GarageSignUp: React.FC = () => {
       }
 
       localStorage.setItem('garage_token', data.token);
-      navigate('/garage-signin');
+      navigate('/signin');
     } catch (err) {
       console.error(err);
       setError('Something went wrong. Please try again.');
@@ -161,7 +161,7 @@ const GarageSignUp: React.FC = () => {
           <div className="text-center mt-6">
             <p className="text-gray-600 dark:text-gray-300">
               Already have an account?{' '}
-              <Link to="/garage-signin" className="text-blue-600 dark:text-blue-400 hover:underline">
+              <Link to="/signin" className="text-blue-600 dark:text-blue-400 hover:underline">
                 Sign in
               </Link>
             </p>

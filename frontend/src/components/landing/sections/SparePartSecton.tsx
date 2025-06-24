@@ -20,25 +20,28 @@ interface SparePart {
 const SparePartSecton: React.FC = () => {
   const [spareParts, setSpareParts] = useState<SparePart[]>([]);
 
-  useEffect(() => {
-    const fetchSpareParts = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/sparepart/all');
-        const data = await response.json();
+useEffect(() => {
+  const fetchSpareParts = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/sparepart/all');
+      const data = await response.json();
 
-        const withSellerInfo = data.map((item: any) => ({
+      const approvedOnly = data
+        .filter((item: any) => item.approval_status === 'Approved')
+        .map((item: any) => ({
           ...item,
-          seller: { verified: true }, // Dummy data, update if seller info is available
+          seller: { verified: true }, // Dummy data
         }));
 
-        setSpareParts(withSellerInfo);
-      } catch (error) {
-        console.error('Failed to fetch spare parts:', error);
-      }
-    };
+      setSpareParts(approvedOnly);
+    } catch (error) {
+      console.error('Failed to fetch spare parts:', error);
+    }
+  };
 
-    fetchSpareParts();
-  }, []);
+  fetchSpareParts();
+}, []);
+
 
   return (
     <section id='spareparts' className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
