@@ -103,21 +103,6 @@ const GarageProfileHeaderSection: React.FC = () => {
                 </button>
               </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-4 mt-6">
-              <div className="text-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="text-xl font-semibold">{user?.listingsCount ?? 0}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Listings</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="text-xl font-semibold">{user?.soldCount ?? 0}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Sold</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <div className="text-xl font-semibold">{user?.favoritesCount ?? 0}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Favorites</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

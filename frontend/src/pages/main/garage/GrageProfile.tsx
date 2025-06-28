@@ -25,7 +25,7 @@ interface UserProfile {
 }
 
 const GrageProfile: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('listings');
+  const [activeTab, setActiveTab] = useState('settings');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,10 +83,6 @@ const GrageProfile: React.FC = () => {
   
 
   const tabs = [
-    { id: 'listings', label: 'My Listings', icon: Car },
-    { id: 'favorites', label: 'Favorites', icon: Heart },
-    { id: 'messages', label: 'Messages', icon: MessageSquare },
-    { id: 'activity', label: 'Activity', icon: ClipboardList },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -143,65 +139,7 @@ const GrageProfile: React.FC = () => {
           {/* Animated Tab Content */}
           <div className="p-6">
             <AnimatePresence mode="wait">
-              {activeTab === 'listings' && (
-                <motion.div key="listings" {...animationProps}>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold">My Listings</h2>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
-                      Add New Listing
-                    </button>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-8 text-center">
-                    <Car size={48} className="mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium mb-2">No Active Listings</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      You don't have any active listings. Start selling your vehicle today!
-                    </p>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
-                      Create First Listing
-                    </button>
-                  </div>
-                </motion.div>
-              )}
 
-              {activeTab === 'favorites' && (
-                <motion.div key="favorites" {...animationProps}>
-                  <h2 className="text-xl font-semibold mb-6">Favorites</h2>
-                  <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-8 text-center">
-                    <Heart size={48} className="mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium mb-2">No Favorites Yet</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Add vehicles to your favorites to see them here.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'messages' && (
-                <motion.div key="messages" {...animationProps}>
-                  <h2 className="text-xl font-semibold mb-6">Messages</h2>
-                  <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-8 text-center">
-                    <MessageSquare size={48} className="mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium mb-2">No Messages</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Your inbox is empty.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'activity' && (
-                <motion.div key="activity" {...animationProps}>
-                  <h2 className="text-xl font-semibold mb-6">Activity</h2>
-                  <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-8 text-center">
-                    <ClipboardList size={48} className="mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium mb-2">No Recent Activity</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Your recent activities will appear here.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
             {activeTab === 'settings' && (
                 <motion.div key="settings" {...animationProps}>
                   <h2 className="text-xl font-semibold mb-6">Settings</h2>

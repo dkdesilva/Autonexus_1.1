@@ -189,15 +189,22 @@ const CustomerProfile: React.FC = () => {
           <div className="p-6">
             <AnimatePresence mode="wait">
               {activeTab === 'listings' && (
-                <MyListings vehicleListings={vehicleListings} errorListings={errorListings} animationProps={animationProps}/>
+                <MyListings 
+                  vehicleListings={vehicleListings} 
+                  errorListings={errorListings} 
+                  animationProps={animationProps}/>
               )}
 
               {activeTab === 'approved' && (
-                <ApprovedListings vehicleListings={vehicleListings} animationProps={animationProps} />
+                <ApprovedListings 
+                  vehicleListings={vehicleListings} 
+                  animationProps={animationProps} />
               )}
 
               {activeTab === 'rjected' && (
-                <RejectedListings vehicleListings={vehicleListings} animationProps={animationProps} />
+                <RejectedListings 
+                  vehicleListings={vehicleListings} 
+                  animationProps={animationProps} />
               )}
 
               {activeTab === 'activity' && (

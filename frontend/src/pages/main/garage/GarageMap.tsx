@@ -20,7 +20,7 @@ const defaultCenter = { lat: 6.9271, lng: 79.8612 };
 
 const GarageMap: React.FC<{ garages: MapGarage[] }> = ({ garages }) => {
   return (
-    <MapContainer center={defaultCenter} zoom={8} style={{ height: '100%', width: '100%' }}>
+    <MapContainer className="pt-20 relative z-0" center={defaultCenter} zoom={8} style={{ height: '100%', width: '100%' }}>
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

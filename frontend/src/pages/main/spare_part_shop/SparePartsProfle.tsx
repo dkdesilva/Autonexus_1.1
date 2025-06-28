@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  Settings,
-  ClipboardList,
-  Heart,
-  MessageSquare,
-  Wrench,
-} from 'lucide-react';
+import { Settings, ClipboardList, Heart, MessageSquare, Wrench } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import axios from 'axios';
 
@@ -14,6 +7,11 @@ import Navbar from '../../../components/main/layout/Navbar';
 import Footer from '../../../components/main/layout/Footer';
 import SparepartProfileHeaderSection from '../../../components/landing/sections/spare_part_shop/SparepartProfileHeaderSection';
 import SparepartProfileFormSection from '../../../components/landing/sections/spare_part_shop/SparepartProfileFormSection';
+import MySpareListings from './MySpareListings';
+import ApprovedSpareListings from './ApprovedSpareListings';
+import RejectedSpareListings from './RejectedSpareListings';
+
+
 
 interface UserProfile {
   username: string;
@@ -83,7 +81,7 @@ const SparePartsProfile: React.FC = () => {
         const res = await axios.get<UserProfile>('http://localhost:5000/api/user');
         setUser(res.data);
         setLoadingProfile(false);
-      } catch (err) {
+      } catch {
         setErrorProfile('Failed to fetch profile data.');
         setLoadingProfile(false);
       }
@@ -91,9 +89,7 @@ const SparePartsProfile: React.FC = () => {
 
     const fetchSparePartListings = async () => {
       try {
-        const res = await axios.get<{ spareparts: SparePartListing[] }>(
-          'http://localhost:5000/api/customer/spareparts'
-        );
+        const res = await axios.get<{ spareparts: SparePartListing[] }>('http://localhost:5000/api/customer/spareparts');
         setSparePartListings(res.data.spareparts);
         setLoadingListings(false);
       } catch {
@@ -110,8 +106,8 @@ const SparePartsProfile: React.FC = () => {
 
   const tabs = [
     { id: 'listings', label: 'My Listings', icon: Wrench },
-    { id: 'favorites', label: 'Favorites', icon: Heart },
-    { id: 'messages', label: 'Messages', icon: MessageSquare },
+    { id: 'approved', label: 'Approved Listings', icon: Heart },
+    { id: 'rejected', label: 'Rejected Listings', icon: MessageSquare },
     { id: 'activity', label: 'Activity', icon: ClipboardList },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -166,98 +162,23 @@ const SparePartsProfile: React.FC = () => {
           <div className="p-6">
             <AnimatePresence mode="wait">
               {activeTab === 'listings' && (
-                <motion.div key="listings" {...animationProps}>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold">My Spare Parts</h2>
-                    <Link to="/create-sparepart-add">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                        Add New Part
-                      </button>
-                    </Link>
-                  </div>
-
-                  {errorListings ? (
-                    <p className="text-red-600 dark:text-red-400">{errorListings}</p>
-                  ) : sparePartListings.length === 0 ? (
-                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-8 text-center">
-                      <Wrench size={48} className="mx-auto mb-4 text-gray-400" />
-                      <h3 className="text-lg font-medium mb-2">No Spare Part Listings</h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        You haven't listed any spare parts yet.
-                      </p>
-                      <Link to="/create-sparepart-add">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                          Create First Listing
-                        </button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {sparePartListings.map((part) => (
-                        <div key={part.ad_id} className="border rounded-lg overflow-hidden shadow-sm bg-white dark:bg-gray-700">
-                          <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-                            {part.images[0] ? (
-                              <img
-                                src={part.images[0]}
-                                alt={part.title}
-                                className="w-full h-full object-cover object-center"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400">
-                                No Image
-                              </div>
-                            )}
-                            <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                              {part.item_condition}
-                            </span>
-                            {part.selling_status && (
-                              <span className="absolute top-3 right-3 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                                {part.selling_status}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="p-4 space-y-2">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                              {part.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-                              {part.description}
-                            </p>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              <span className="block">Brand: {part.brand}</span>
-                              <span className="block">Model: {part.model_compatibility}</span>
-                              <span className="block">Quantity: {part.quantity}</span>
-                            </div>
-                            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                              ${part.price.toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
+                <MySpareListings
+                  sparePartListings={sparePartListings}
+                  errorListings={errorListings}
+                  animationProps={animationProps}
+                />
               )}
 
-              {activeTab === 'favorites' && (
-                <motion.div key="favorites" {...animationProps}>
-                  <h2 className="text-xl font-semibold mb-6">Favorites</h2>
-                  <div className="text-center p-8 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                    <Heart size={48} className="mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600 dark:text-gray-400">No favorites yet.</p>
-                  </div>
-                </motion.div>
+              {activeTab === 'approved' && (
+                <ApprovedSpareListings
+                  sparePartListings={sparePartListings} 
+                  animationProps={animationProps} />
               )}
 
-              {activeTab === 'messages' && (
-                <motion.div key="messages" {...animationProps}>
-                  <h2 className="text-xl font-semibold mb-6">Messages</h2>
-                  <div className="text-center p-8 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                    <MessageSquare size={48} className="mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600 dark:text-gray-400">No messages yet.</p>
-                  </div>
-                </motion.div>
+              {activeTab === 'rejected' && (
+                <RejectedSpareListings 
+                  sparePartListings={sparePartListings} 
+                  animationProps={animationProps} />
               )}
 
               {activeTab === 'activity' && (

@@ -16,33 +16,34 @@ interface SparePart {
   seller?: {
     verified: boolean;
   };
+  item_condition: string;
+  selling_status: string;
 }
 
 const LandingPageSpareParts: React.FC = () => {
   const [spareParts, setSpareParts] = useState<SparePart[]>([]);
 
-useEffect(() => {
-  const fetchSpareParts = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/sparepart/all');
-      const data = await response.json();
+  useEffect(() => {
+    const fetchSpareParts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/sparepart/all');
+        const data = await response.json();
 
-      const approvedParts = data
-        .filter((item: any) => item.approval_status === 'Approved')
-        .map((item: any) => ({
-          ...item,
-          seller: { verified: true }, // Dummy data, update if seller info is available
-        }));
+        const approvedParts = data
+          .filter((item: any) => item.approval_status === 'Approved')
+          .map((item: any) => ({
+            ...item,
+            seller: { verified: true }, // Dummy data, update if real seller info available
+          }));
 
-      setSpareParts(approvedParts);
-    } catch (error) {
-      console.error('Failed to fetch spare parts:', error);
-    }
-  };
+        setSpareParts(approvedParts);
+      } catch (error) {
+        console.error('Failed to fetch spare parts:', error);
+      }
+    };
 
-  fetchSpareParts();
-}, []);
-
+    fetchSpareParts();
+  }, []);
 
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -60,8 +61,9 @@ useEffect(() => {
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {spareParts.slice(0, 6).map((part, index) => (
+        {/* Updated grid for 4 cards per row */}
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          {spareParts.slice(0, 8).map((part, index) => (
             <Card 
               key={part.ad_id}
               className="h-full animate-fade-in"
@@ -69,26 +71,39 @@ useEffect(() => {
               hoverEffect={true}
               onClick={() => window.location.href = `/details/${part.ad_id}`}
             >
-              <div className="relative h-48 overflow-hidden rounded-t-xl">
+              <div className="relative h-36 overflow-hidden rounded-t-xl">
                 <img 
                   src={part.images[0]} 
                   alt={part.title} 
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
-                {part.seller?.verified && (
-                  <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
-                    <ShieldCheck className="h-3 w-3 mr-1" />
-                    Verified
-                  </div>
-                )}
               </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">{part.title}</h3>
-                <span className="text-gray-600 dark:text-gray-300 block mb-1">Year: {part.made_year}</span>
-                <p className="text-blue-600 dark:text-blue-400 font-bold text-xl mb-3">${part.price.toLocaleString()}</p>
-                <p className="text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">{part.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">{part.province}, {part.city}</span>
+
+              <div className="p-4">
+                {/* Badges before title */}
+                <div className="flex space-x-2 mb-2">
+                  {part.item_condition && (
+                    <span className="bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded">
+                      {part.item_condition}
+                    </span>
+                  )}
+                  {part.selling_status && (
+                    <span className="bg-green-600 text-white text-xs font-medium px-2 py-0.5 rounded">
+                      {part.selling_status}
+                    </span>
+                  )}
+                    <span className="bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded flex items-center">
+                      <ShieldCheck className="h-3 w-3 mr-1" />
+                      Verified
+                    </span>
+                </div>
+
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">{part.title}</h3>
+                <span className="text-gray-600 dark:text-gray-300 block mb-1 text-sm">Year: {part.made_year}</span>
+                <p className="text-blue-600 dark:text-blue-400 font-bold text-base mb-3">${part.price.toLocaleString()}</p>
+                <p className="text-gray-600 dark:text-gray-300 line-clamp-2 mb-4 text-sm">{part.description}</p>
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                  <span>{part.province}, {part.city}</span>
                   <Link
                     to={`/details/${part.ad_id}`}
                     className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium inline-flex items-center"

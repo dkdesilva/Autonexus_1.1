@@ -55,6 +55,16 @@ const Navbar: React.FC = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <div className="flex space-x-6">
+                <ScrollLink
+                to="hero"
+                spy={true}
+                smooth={true}
+                offset={-80}
+                duration={500}
+                className="text-gray-1000 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 font-medium cursor-pointer"
+              >
+                Home
+              </ScrollLink>
               <ScrollLink
                 to="services"
                 spy={true}

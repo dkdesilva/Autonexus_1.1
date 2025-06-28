@@ -17,6 +17,8 @@ interface Vehicle {
   seller?: {
     verified: boolean;
   };
+  item_condition: string;
+  selling_status: string;
 }
 
 const VehiclesSection: React.FC = () => {
@@ -65,42 +67,53 @@ const VehiclesSection: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {vehicles.slice(0, 6).map((vehicle, index) => (
-            <Card 
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          {vehicles.slice(0, 8).map((vehicle, index) => (
+            <Card
               key={vehicle.ad_id}
               className="h-full animate-fade-in"
               style={{ animationDelay: `${index * 100}ms` }}
               hoverEffect={true}
               onClick={() => window.location.href = `/details/${vehicle.ad_id}`}
             >
-              <div className="relative h-48 overflow-hidden rounded-t-xl">
-                <img 
-                  src={vehicle.images[0]} 
-                  alt={vehicle.title} 
+              <div className="relative h-36 overflow-hidden rounded-t-xl">
+                <img
+                  src={vehicle.images[0]}
+                  alt={vehicle.title}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
-                {vehicle.seller?.verified && (
-                  <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+                {/* Removed badges from here */}
+              </div>
+              
+              <div className="p-4">
+                {/* Badges container before title */}
+                <div className="flex space-x-2 mb-2">
+                  {vehicle.item_condition && (
+                    <span className="bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded">
+                      {vehicle.item_condition}
+                    </span>
+                  )}
+                  {vehicle.selling_status && (
+                    <span className="bg-green-600 text-white text-xs font-medium px-2 py-0.5 rounded">
+                      {vehicle.selling_status}
+                    </span>
+                  )}
+                  <span className="bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded flex items-center">
                     <ShieldCheck className="h-3 w-3 mr-1" />
                     Verified
-                  </div>
-                )}
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">{vehicle.title}</h3>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-600 dark:text-gray-300">{vehicle.made_year}</span>
-                  <span className="text-gray-600 dark:text-gray-300">{vehicle.mileage.toLocaleString()} mi</span>
+                  </span>
                 </div>
-                <p className="text-blue-600 dark:text-blue-400 font-bold text-xl mb-3">${vehicle.price.toLocaleString()}</p>
-                <p className="text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">{vehicle.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">{vehicle.province}, {vehicle.city}</span>
-                  <Link
-                    to={`/details/${vehicle.ad_id}`}
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium inline-flex items-center"
-                  >
+
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">{vehicle.title}</h3>
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                  <span>{vehicle.made_year}</span>
+                  <span>{Number(vehicle.mileage).toLocaleString()} km</span>
+                </div>
+                <p className="text-blue-600 dark:text-blue-400 font-bold text-base mb-2">Rs. {Number(vehicle.price).toLocaleString()}</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-2">{vehicle.description}</p>
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                  <span>{vehicle.city}, {vehicle.province}</span>
+                  <Link to={`/details/${vehicle.ad_id}`} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center">
                     Details <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
@@ -108,6 +121,7 @@ const VehiclesSection: React.FC = () => {
             </Card>
           ))}
         </div>
+
       </div>
     </section>
   );
