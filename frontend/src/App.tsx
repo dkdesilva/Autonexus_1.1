@@ -76,6 +76,7 @@ function App() {
           <Route path="/admindashboard" element={<AdminDashboard />} />
 
           <Route path="/dealership/:id" element={<DealershipProfileCustomerView />} />
+          
 
           {/* <Route path="/garagemap" element={<GarageMap />} /> */}
 

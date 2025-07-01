@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ShieldCheck } from 'lucide-react';
 import Card from '../../components/main/ui/Card';
+import LandingSearchBar from '../../components/landing/sections/LandingSearchBar';
 
 interface Vehicle {
   ad_id: number;
@@ -23,6 +24,7 @@ interface Vehicle {
 
 const LandingPageVehicles: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -49,8 +51,17 @@ const LandingPageVehicles: React.FC = () => {
     fetchVehicles();
   }, []);
 
+  // Filter vehicles based on searchTerm (searching in title, case-insensitive)
+  const filteredVehicles = vehicles.filter(vehicle =>
+    vehicle.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <LandingSearchBar
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-12">
           <div>
@@ -66,7 +77,7 @@ const LandingPageVehicles: React.FC = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-          {vehicles.slice(0, 8).map((vehicle, index) => (
+          {filteredVehicles.slice(0, 8).map((vehicle, index) => (
             <Card
               key={vehicle.ad_id}
               className="h-full animate-fade-in"
@@ -80,11 +91,9 @@ const LandingPageVehicles: React.FC = () => {
                   alt={vehicle.title}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
-                {/* Removed badges from here */}
               </div>
               
               <div className="p-4">
-                {/* Badges container before title */}
                 <div className="flex space-x-2 mb-2">
                   {vehicle.item_condition && (
                     <span className="bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded">
@@ -117,7 +126,6 @@ const LandingPageVehicles: React.FC = () => {
                 </div>
               </div>
             </Card>
-
           ))}
         </div>
       </div>
