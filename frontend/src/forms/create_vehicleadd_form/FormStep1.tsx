@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StepProps } from '../create_vehicleadd_form/types';
 
 const FormStep1: React.FC<StepProps> = ({ formData, setFormData, errors, setErrors }) => {
@@ -16,6 +16,10 @@ const FormStep1: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
       });
     }
   };
+
+  useEffect(() => {
+  setFormData(prev => ({ ...prev, selling_status: 'available' }));
+  }, []);
 
   return (
     <div className="space-y-6 transition-all duration-300 ease-in-out text-gray-800 dark:text-gray-200">
@@ -204,18 +208,16 @@ const FormStep1: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
           <select
             id="selling_status"
             name="selling_status"
-            value={formData.selling_status || 'available'}
-            onChange={handleChange}
+            value="available"
+            disabled
             className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
-              text-gray-900 dark:text-white bg-white dark:bg-gray-700
+              text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 cursor-not-allowed
             `}
           >
             <option value="available">Available</option>
-            <option value="sold">Sold</option>
-            <option value="reserved">Reserved</option>
-            <option value="pending">Pending</option>
           </select>
         </div>
+
       </div>
     </div>
   );

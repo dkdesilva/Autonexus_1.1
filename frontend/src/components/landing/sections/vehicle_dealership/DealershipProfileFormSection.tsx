@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface DealershipProfile {
   phone_number: string;
@@ -127,10 +129,10 @@ const DealershipProfileFormSection: React.FC = () => {
 
     try {
       const res = await axios.put("http://localhost:5000/api/dealership/update-profile", payload);
-      alert(res.data.message);
+      toast.success(res.data.message);
     } catch (err) {
       console.error("Update failed", err);
-      alert("Something went wrong while updating the profile");
+      toast.error("Something went wrong");
     }
   };
 

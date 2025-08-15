@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface UserProfile {
   cus_id?: number;
@@ -126,10 +128,10 @@ const CustomerProfileFormSection: React.FC = () => {
         "http://localhost:5000/api/customer/update-profile",
         payload
       );
-      alert(res.data.message);
+      toast.success(res.data.message);
     } catch (err) {
       console.error("Update failed", err);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     }
   };
 
@@ -142,109 +144,125 @@ const CustomerProfileFormSection: React.FC = () => {
     );
 
   return (
-    <motion.div key="settings" {...animationProps}>
-      <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
-      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-        <SectionHeader title="Personal Information" />
+    <>
+      <motion.div key="settings" {...animationProps}>
+        <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          <SectionHeader title="Personal Information" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormGroup label="Email">
-            <input
-              type="email"
-              name="email"
-              defaultValue={profile?.email}
-              disabled
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="First Name">
-            <input
-              type="text"
-              name="first_name"
-              defaultValue={profile?.first_name || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Middle Name">
-            <input
-              type="text"
-              name="middle_name"
-              defaultValue={profile?.middle_name || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Last Name">
-            <input
-              type="text"
-              name="last_name"
-              defaultValue={profile?.last_name || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Date of Birth">
-            <input
-              type="date"
-              name="date_of_birth"
-              defaultValue={profile?.birthday ? profile.birthday.split("T")[0] : ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Phone Number">
-            <input
-              type="text"
-              name="phone_number"
-              defaultValue={profile?.phone_number || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="Gender">
-            <select
-              name="gender"
-              defaultValue={profile?.gender || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormGroup label="Email">
+              <input
+                type="email"
+                name="email"
+                defaultValue={profile?.email}
+                disabled
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="First Name">
+              <input
+                type="text"
+                name="first_name"
+                defaultValue={profile?.first_name || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="Middle Name">
+              <input
+                type="text"
+                name="middle_name"
+                defaultValue={profile?.middle_name || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="Last Name">
+              <input
+                type="text"
+                name="last_name"
+                defaultValue={profile?.last_name || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="Date of Birth">
+              <input
+                type="date"
+                name="date_of_birth"
+                defaultValue={profile?.birthday ? profile.birthday.split("T")[0] : ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="Phone Number">
+              <input
+                type="text"
+                name="phone_number"
+                defaultValue={profile?.phone_number || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="Gender">
+              <select
+                name="gender"
+                defaultValue={profile?.gender || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="" disabled>
+                  Select Gender
+                </option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </FormGroup>
+            <FormGroup label="Address">
+              <input
+                type="text"
+                name="address"
+                defaultValue={profile?.address || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="Province">
+              <input
+                type="text"
+                name="province"
+                defaultValue={profile?.province || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+            <FormGroup label="District">
+              <input
+                type="text"
+                name="district"
+                defaultValue={profile?.district || ""}
+                className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </FormGroup>
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
             >
-              <option value="" disabled>Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </FormGroup>
-          <FormGroup label="Address">
-            <input
-              type="text"
-              name="address"
-              defaultValue={profile?.address || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </motion.div>
+            <ToastContainer
+              position="top-center"
+              autoClose={2000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+             // theme="colored"
             />
-          </FormGroup>
-          <FormGroup label="Province">
-            <input
-              type="text"
-              name="province"
-              defaultValue={profile?.province || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-          <FormGroup label="District">
-            <input
-              type="text"
-              name="district"
-              defaultValue={profile?.district || ""}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </FormGroup>
-        </div>
-
-        <div className="flex justify-end mt-4">
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
-          >
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </motion.div>
+    </>
   );
 };
 

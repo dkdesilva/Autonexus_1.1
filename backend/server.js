@@ -14,10 +14,13 @@ app.use(express.json());
 
 // MySQL Connection
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'KAlana#23',
-  database: 'autonexus',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 db.connect(err => {
   if (err) console.error('Database connection failed:', err.message);
@@ -394,25 +397,79 @@ app.post('/api/customer/save-profile-image', authenticateJWT, (req, res) => {
 
 // ------------------------- Get user profile image info -------------------------
 
-app.get('/api/customer/profile-image', authenticateJWT, (req, res) => {
-  const userId = req.user.id; // Changed from req.userId to req.user.id
+// app.get('/api/customer/profile-image', authenticateJWT, (req, res) => {
+//   const userId = req.user.id; // Changed from req.userId to req.user.id
   
-  const sql = 'SELECT profile_picture FROM users WHERE user_id = ? AND is_deleted = 0';
-  db.query(sql, [userId], (err, result) => {
+//   const sql = 'SELECT profile_picture FROM users WHERE user_id = ? AND is_deleted = 0';
+//   db.query(sql, [userId], (err, result) => {
+//     if (err) {
+//       console.error('Database error:', err);
+//       return res.status(500).json({ message: 'Database error' });
+//     }
+    
+//     if (result.length === 0) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+    
+//     const profilePicture = result[0].profile_picture;
+//     if (!profilePicture) {
+//       return res.status(404).json({ message: 'No profile image found' });
+//     }
+    
+//     res.status(200).json({ profile_picture: profilePicture });
+//   });
+// });
+
+// app.get('/api/dealership/profile-image', authenticateJWT, (req, res) => {
+//   const userId = req.user.id;
+
+//   // Query users table but filter user_type = 'dealership' and not deleted
+//   const sql = 'SELECT profile_picture FROM users WHERE user_id = ? AND user_type = ? AND is_deleted = 0';
+
+//   db.query(sql, [userId, 'dealership'], (err, result) => {
+//     if (err) {
+//       console.error('Database error:', err);
+//       return res.status(500).json({ message: 'Database error' });
+//     }
+
+//     if (result.length === 0) {
+//       return res.status(404).json({ message: 'User not found or not a dealership' });
+//     }
+
+//     const profilePicture = result[0].profile_picture;
+//     if (!profilePicture) {
+//       return res.status(404).json({ message: 'No profile image found' });
+//     }
+
+//     res.status(200).json({ profile_picture: profilePicture });
+//   });
+// });
+app.get('/api/:user_type/profile-image', authenticateJWT, (req, res) => {
+  const userId = req.user.id;
+  const userType = req.params.user_type; // from the URL path
+
+  // Validate user_type if needed (optional)
+  const allowedTypes = ['customer', 'dealership', 'garage', 'sparepart'];
+  if (!allowedTypes.includes(userType)) {
+    return res.status(400).json({ message: 'Invalid user type' });
+  }
+
+  const sql = 'SELECT profile_picture FROM users WHERE user_id = ? AND user_type = ? AND is_deleted = 0';
+  db.query(sql, [userId, userType], (err, result) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ message: 'Database error' });
     }
-    
+
     if (result.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found or user type mismatch' });
     }
-    
+
     const profilePicture = result[0].profile_picture;
     if (!profilePicture) {
       return res.status(404).json({ message: 'No profile image found' });
     }
-    
+
     res.status(200).json({ profile_picture: profilePicture });
   });
 });
@@ -1780,6 +1837,63 @@ app.get('/api/garagesall', (req, res) => {
   });
 });
 
+// Get user details by vehicle ad user_id
+app.get('/api/seller/:userId', (req, res) => {
+  const { userId } = req.params;
+
+  const query = `
+    SELECT 
+      u.user_id,
+      u.email,
+      u.phone_number,
+      u.address,
+      u.province,
+      u.district,
+      u.profile_picture,
+      u.cover_picture,
+      c.first_name,
+      c.middle_name,
+      c.last_name,
+      c.gender,
+      c.birthday
+    FROM users u
+    LEFT JOIN customer c ON u.user_id = c.user_id
+    WHERE u.user_id = ? AND u.is_deleted = 0 AND (c.is_deleted = 0 OR c.is_deleted IS NULL)
+    LIMIT 1
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching seller data', error: err.message });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+
+    const user = results[0];
+
+    const seller = {
+      user_id: user.user_id,
+      email: user.email,
+      phone_number: user.phone_number,
+      address: user.address,
+      province: user.province,
+      district: user.district,
+      profile_picture: user.profile_picture
+        ? `${req.protocol}://${req.get('host')}/images/${user.profile_picture}`
+        : null,
+      cover_picture: user.cover_picture
+        ? `${req.protocol}://${req.get('host')}/images/${user.cover_picture}`
+        : null,
+      full_name: [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(' '),
+      gender: user.gender,
+      birthday: user.birthday,
+    };
+
+    res.json(seller);
+  });
+});
 
 
 

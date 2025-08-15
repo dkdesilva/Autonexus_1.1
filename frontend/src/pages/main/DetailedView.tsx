@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate  } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Star, ShieldCheck } from 'lucide-react';
 import Navbar from '../../components/main/layout/Navbar';
 import Footer from '../../components/main/layout/Footer';
@@ -11,6 +11,7 @@ const DetailedView: React.FC = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [item, setItem] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const isVehicle = id && parseInt(id) < 100;
 
@@ -210,7 +211,14 @@ const DetailedView: React.FC = () => {
             </div>
 
             <div className="mt-10 space-y-4">
-              <Button variant="primary" fullWidth className="py-3">Contact Seller</Button>
+              <Button 
+                variant="primary" 
+                fullWidth className="py-3" 
+                onClick={() => navigate(`/seller/${item.user_id}`,
+                { state: { fromDetailsId: id } }
+                )}
+                >Contact Seller
+              </Button>
               <Button variant="outline" fullWidth className="py-3">
                 {isVehicle ? 'Schedule a Test Drive' : 'Add to Cart'}
               </Button>

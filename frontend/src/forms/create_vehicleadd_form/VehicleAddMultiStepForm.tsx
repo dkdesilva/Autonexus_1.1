@@ -8,9 +8,13 @@ import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
 import { validateStep, isStepValid } from '../create_vehicleadd_form/utils';
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+
 const VehicleAddMultiStepForm: React.FC = () => {
   const totalSteps = 4;
-
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -20,7 +24,7 @@ const VehicleAddMultiStepForm: React.FC = () => {
     city: '',
     phone_number: '',
     selling_status: '',
-    images: [], // File[]
+    images: [],
     item_type: '',
     item_condition: '',
     brand: '',
@@ -30,6 +34,7 @@ const VehicleAddMultiStepForm: React.FC = () => {
     fuel_type: '',
     transmission: '',
   });
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
@@ -39,15 +44,15 @@ const VehicleAddMultiStepForm: React.FC = () => {
     setErrors(stepErrors);
 
     if (isStepValid(stepErrors) && currentStep < totalSteps) {
-      setErrors({}); // Clear errors on successful validation
+      setErrors({});
       setCurrentStep(currentStep + 1);
-      window.scrollTo(0, 0); // Optional UX improvement
+      window.scrollTo(0, 0);
     }
   };
 
   const goToPreviousStep = () => {
     if (currentStep > 1) {
-      setErrors({}); // Clear errors on going back
+      setErrors({});
       setCurrentStep(currentStep - 1);
       window.scrollTo(0, 0);
     }
@@ -62,7 +67,7 @@ const VehicleAddMultiStepForm: React.FC = () => {
 
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
-      alert('No token found. Please log in again.');
+      toast.error('No token found. Please log in again.');
       return;
     }
 
@@ -90,10 +95,15 @@ const VehicleAddMultiStepForm: React.FC = () => {
       );
 
       console.log('Response:', response.data);
-      setIsComplete(true);
+      toast.success('Vehicle submitted successfully!');
+
+      setTimeout(() => {
+        setIsComplete(true);
+      }, 2000); // Wait 2 seconds before switching screen
+
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to submit vehicle listing.');
+      toast.error('Failed to submit vehicle.');
     } finally {
       setIsSubmitting(false);
     }
@@ -110,25 +120,39 @@ const VehicleAddMultiStepForm: React.FC = () => {
     }
   };
 
-  if (isComplete) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
-          <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Listing Submitted!</h2>
-          <p className="mb-4 text-gray-600 dark:text-gray-300">Your vehicle listing has been added.</p>
+if (isComplete) {
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
+        <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">
+          Listing Submitted!
+        </h2>
+        <p className="mb-4 text-gray-600 dark:text-gray-300">
+          Your vehicle listing has been added.
+        </p>
+        <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={() => window.location.reload()}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Add Another
           </button>
+          <button
+            onClick={() => navigate('/customer-profile')}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Go Back
+          </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <div className="p-4 min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
+      <ToastContainer position="top-center" autoClose={2000} />
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-3xl">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
         <form onSubmit={handleSubmit}>

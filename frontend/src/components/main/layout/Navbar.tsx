@@ -27,13 +27,40 @@ const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    axios
-      .get('http://localhost:5000/api/user', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setUser(res.data))
-      .catch((err) => console.error('User fetch error:', err));
+    const fetchUserAndImage = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Fetch user info
+        const userRes = await axios.get('http://localhost:5000/api/user', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const userData = userRes.data;
+
+        // Attempt to fetch profile image for correct user type
+        try {
+          const imageRes = await axios.get(
+            `http://localhost:5000/api/${userData.user_type}/profile-image`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (imageRes.data.profile_picture) {
+            userData.profileImage = `http://localhost:5000/images/${imageRes.data.profile_picture}`;
+          }
+        } catch (err) {
+          console.warn('Profile image not found or error fetching image.');
+        }
+
+        setUser(userData);
+      } catch (err) {
+        console.error('User fetch error:', err);
+      }
+    };
+
+    fetchUserAndImage();
   }, []);
 
   const navLinks = [
@@ -47,11 +74,11 @@ const Navbar: React.FC = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
-const navbarClasses = `fixed w-full z-50 transition-all duration-300 ${
-  isScrolled
-    ? 'backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b border-gray-300 dark:border-gray-700 py-2'
-    : 'bg-transparent py-4'
-}`;
+  const navbarClasses = `fixed w-full z-50 transition-all duration-300 ${
+    isScrolled
+      ? 'backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md border-b border-gray-300 dark:border-gray-700 py-2'
+      : 'bg-transparent py-4'
+  }`;
 
   return (
     <nav className={navbarClasses}>

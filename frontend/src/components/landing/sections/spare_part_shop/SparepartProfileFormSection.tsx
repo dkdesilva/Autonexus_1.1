@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface DealershipProfile {
   phone_number: string;
@@ -127,10 +129,10 @@ const SparepartProfileFormSection: React.FC = () => {
 
     try {
       const res = await axios.put("http://localhost:5000/api/spareparts/update-profile", payload);
-      alert(res.data.message);
+      toast.success(res.data.message);
     } catch (err) {
       console.error("Update failed", err);
-      alert("Something went wrong while updating the profile");
+      toast.error("Something went wrong");
     }
   };
 
@@ -138,57 +140,71 @@ const SparepartProfileFormSection: React.FC = () => {
   if (error) return <p className="text-red-500 text-center p-4">{error}</p>;
 
   return (
-    <motion.div key="dealership-settings" {...animationProps}>
-      <h2 className="text-xl font-semibold mb-6">Dealership Profile Settings</h2>
-      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-        <SectionHeader title="Dealership Information" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormGroup label="Phone Number">
-            <input type="text" name="phone_number" defaultValue={profile?.phone_number || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="Address">
-            <input type="text" name="address" defaultValue={profile?.address || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="Province">
-            <input type="text" name="province" defaultValue={profile?.province || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="District">
-            <input type="text" name="district" defaultValue={profile?.district || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="Company Name">
-            <input type="text" name="company_name" defaultValue={profile?.company_name || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="Description">
-            <textarea name="description" defaultValue={profile?.description || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3} />
-          </FormGroup>
-          <FormGroup label="Founded Year">
-            <input type="text" name="founded_year" defaultValue={profile?.founded_year || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="Owner Name">
-            <input type="text" name="owner_name" defaultValue={profile?.owner_name || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-          </FormGroup>
-          <FormGroup label="Opening Days">
-            <select name="opening_days" defaultValue={profile?.opening_days} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-              {openingDaysOptions.map((day) => (
-                <option key={day} value={day}>{day}</option>
-              ))}
-            </select>
-          </FormGroup>
-          <FormGroup label="Opening Hours">
-            <select name="opening_hours" defaultValue={profile?.opening_hours} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-              {openingHoursOptions.map((hour) => (
-                <option key={hour} value={hour}>{hour}</option>
-              ))}
-            </select>
-          </FormGroup>
-        </div>
-        <div className="flex justify-end mt-4">
-          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </motion.div>
+    <>
+      <motion.div key="dealership-settings" {...animationProps}>
+        <h2 className="text-xl font-semibold mb-6">Dealership Profile Settings</h2>
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          <SectionHeader title="Dealership Information" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormGroup label="Phone Number">
+              <input type="text" name="phone_number" defaultValue={profile?.phone_number || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="Address">
+              <input type="text" name="address" defaultValue={profile?.address || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="Province">
+              <input type="text" name="province" defaultValue={profile?.province || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="District">
+              <input type="text" name="district" defaultValue={profile?.district || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="Company Name">
+              <input type="text" name="company_name" defaultValue={profile?.company_name || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="Description">
+              <textarea name="description" defaultValue={profile?.description || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3} />
+            </FormGroup>
+            <FormGroup label="Founded Year">
+              <input type="text" name="founded_year" defaultValue={profile?.founded_year || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="Owner Name">
+              <input type="text" name="owner_name" defaultValue={profile?.owner_name || ""} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+            </FormGroup>
+            <FormGroup label="Opening Days">
+              <select name="opening_days" defaultValue={profile?.opening_days} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                {openingDaysOptions.map((day) => (
+                  <option key={day} value={day}>{day}</option>
+                ))}
+              </select>
+            </FormGroup>
+            <FormGroup label="Opening Hours">
+              <select name="opening_hours" defaultValue={profile?.opening_hours} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                {openingHoursOptions.map((hour) => (
+                  <option key={hour} value={hour}>{hour}</option>
+                ))}
+              </select>
+            </FormGroup>
+          </div>
+          <div className="flex justify-end mt-4">
+            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </motion.div>
+                <ToastContainer
+                  position="top-center"
+                  autoClose={2000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                 // theme="colored"
+                />
+    </>
   );
 };
 

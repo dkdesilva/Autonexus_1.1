@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS spareparts (
 DROP TABLE spareparts;
 -- Show all tables
 SHOW TABLES;
+use autonexus;
 select * from users;
 select * from customer;
 select * from car_dealerships;
@@ -184,5 +185,5 @@ select * from admins;
 select * from advertisements;
 select * from items;
 select * from item_images;
-select * from vehicles;
+  
 select * from spareparts;

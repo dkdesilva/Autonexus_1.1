@@ -88,6 +88,9 @@ const FormStep3: React.FC<StepProps> = ({ formData, setFormData, errors, setErro
       {errors.images && (
         <p className="mt-1 text-sm text-red-500">{errors.images}</p>
       )}
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Maximum file size: 5MB. Only image files are allowed.
+        </p>
     </div>
   );
 };

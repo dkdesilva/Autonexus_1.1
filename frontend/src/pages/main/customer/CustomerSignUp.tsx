@@ -1,74 +1,76 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
-import Button from '../../../components/main/ui/Button';
+import React, { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
+import Button from '../../../components/main/ui/Button'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const CustomerSignUp: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setError('');
-  };
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    setError('')
+  }
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+    setShowPassword(!showPassword)
+  }
 
   const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
+    setShowConfirmPassword(!showConfirmPassword)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      setError('Passwords do not match')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     try {
       const response = await fetch('http://localhost:5000/api/cusregister', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password
-        }),
-      });
+        })
+      })
 
-      const data = await response.json();
-      setLoading(false);
+      const data = await response.json()
+      setLoading(false)
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        navigate('/customer-signin');
+        localStorage.setItem('token', data.token)
+        toast.success('Signup successful!')
+        setTimeout(() => {
+          navigate('/signin')
+        }, 2000)
       } else {
-        setError(data.message || 'Signup failed');
+        setError(data.message || 'Signup failed')
       }
     } catch (error) {
-      console.error('Signup error:', error);
-      setError('Something went wrong. Please try again later.');
-      setLoading(false);
+      console.error('Signup error:', error)
+      setError('Something went wrong. Please try again later.')
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-950 flex items-center justify-center p-4">
@@ -85,9 +87,11 @@ const CustomerSignUp: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Email
             </label>
             <input
@@ -102,9 +106,11 @@ const CustomerSignUp: React.FC = () => {
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Password
             </label>
             <div className="relative">
@@ -124,14 +130,20 @@ const CustomerSignUp: React.FC = () => {
                 onClick={togglePasswordVisibility}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-300"
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Confirm Password
             </label>
             <div className="relative">
@@ -150,7 +162,11 @@ const CustomerSignUp: React.FC = () => {
                 onClick={toggleConfirmPasswordVisibility}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-300"
               >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -163,7 +179,10 @@ const CustomerSignUp: React.FC = () => {
         <div className="text-center mt-6">
           <p className="text-gray-600 dark:text-gray-300">
             Already have an account?{' '}
-            <Link to="/signin" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link
+              to="/signin"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
               Sign in
             </Link>
           </p>
@@ -171,17 +190,36 @@ const CustomerSignUp: React.FC = () => {
 
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-xs text-center text-gray-500 dark:text-gray-400">
           By signing up, you agree to our{' '}
-          <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+          <a
+            href="#"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
             Terms of Service
           </a>{' '}
           and{' '}
-          <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+          <a
+            href="#"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
             Privacy Policy
-          </a>.
+          </a>
+          .
         </div>
       </div>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        // theme="colored"
+      />
     </div>
-  );
-};
+  )
+}
 
-export default CustomerSignUp;
+export default CustomerSignUp
